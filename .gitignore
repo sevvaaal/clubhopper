@@ -1,0 +1,16 @@
+# Secrets
+.env
+
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Node
+node_modules/
+dist/
+
+# Raw API responses cached while collecting data (rebuildable, can get large)
+data/raw/
+
+.DS_Store
