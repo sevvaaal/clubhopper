@@ -1,0 +1,95 @@
+# Clubhopper — Proje Planı
+
+Son güncelleme: 19 Kasım 2026. Bu belge kararları ve yol haritasını tek yerde tutar; karar değiştikçe güncellenir.
+
+## 1. Kararlar (netleşti)
+
+| Konu | Karar |
+|---|---|
+| İlk oyun | **Zincir**: oyuncudan oyuncuya, ortak takım-sezonlar üzerinden (Icardi → Galatasaray 23/24 → Muslera). Hamleler tıklanarak seçilir. Diğer üç oyun sonra. |
+| Oyun modu | **Günlük bulmaca** (herkese aynı) **+ serbest mod** (sınırsız rastgele). |
+| Dil | **TR + EN**, varsayılan Türkçe. |
+| Kapsam | Süper Lig + büyük 5 lig, milli takım yok. Sezonlar veri geldikçe açılır, diğerleri "yakında". |
+| Kadro eşiği | Oyuncu bir takım-sezona **ligde en az 1 maça çıktıysa** aittir. |
+| Altyapı | **Statik site**: önceden üretilmiş JSON + tarayıcıda graf. Sunucu ve veritabanı yok. |
+| Pro plan | **İlk oyun ücretsiz veriyle hazır olunca** alınır (~19€, 1 ay, otomatik yenileme yok). |
+| Görseller | Takım logosu ve oyuncu fotoğrafı küçültülüp kendi sitemizden sunulur. Yoksa baş harf avatarı kullanılır. Hakkında sayfasında kaynak/telif notu olur. |
+| Tasarım | Logo hazır (taslak B). Site tasarımına henüz başlanmayacak. |
+
+## 2. Mimari
+
+```
+API-Football ──collect.py──▶ data/raw/       (ham yanıtlar, gitignore, bir kez çekilir)
+                               │
+                         build.py (yeni)
+                               ▼
+                         data/build/         (oyunun okuduğu küçük, temiz JSON)
+                               │
+                         images.py (yeni)
+                               ▼
+                         site/public/img/    (64 px logo, 96 px foto, webp)
+                               │
+                            site/ (statik)   ──▶ GitHub Pages / Cloudflare Pages
+```
+
+Pipeline üç ayrı adımdan oluşur ve her biri tekrar çalıştırılabilir:
+
+1. **collect**: API'den ham veriyi indirir. Kaldığı yerden devam eder. `--plan free|pro` ile limitler değişir.
+2. **build**: Ham veriyi oyun verisine çevirir. API'ye hiç istek atmaz, istediğimiz kadar yeniden çalıştırabiliriz.
+3. **images**: Logo ve fotoğrafları indirir, küçültür, yerelde saklar.
+
+### Oyun verisi (data/build/) taslağı
+
+- `teams.json`: id, ad, kısa ad, ülke, logo yolu
+- `players.json`: id, ad, kısa ad, uyruk, doğum yılı, foto yolu
+- `seasons/{lig}-{yıl}.json`: o lig-sezondaki takımlar ve her takımın oyuncu id'leri. Yalnızca en az 1 maça çıkanlar alınır; maç ve dakika sayısı da tutulur (zorluk/ünlülük için).
+- `index.json`: hangi lig-sezonlar açık, hangileri "yakında"
+- `daily/{yıl}.json`: önceden üretilmiş günlük bulmacalar (başlangıç, hedef, en kısa yol uzunluğu)
+
+Kabaca hesap: tam kapsamda ~2000 takım-sezon, ~25 bin oyuncu, ~60 bin oyuncu-takım bağı var. Sıkıştırılmış hâli birkaç MB eder, statik site için sorun değil. Gerekirse sezon dosyaları tembel (lazy) yüklenir.
+
+## 3. Zincir oyunu — kurallar taslağı
+
+- **Durak**: oyuncu. İki oyuncu, ikisinin de en az 1 maça çıktığı her takım-sezonla bağlıdır.
+- Bir başlangıç ve bir hedef oyuncu verilir. İkisi de çok dakika almış, tanınan oyunculardan seçilir.
+- **Hamle**: tamamen tıklayarak yapılır. Önce mevcut oyuncunun takım-sezonları buton olarak çıkar, birini seçince o kadronun oyuncuları çıkar, sonra biri seçilir.
+- **Zorluk**: en kısa yolun uzunluğu (şimdilik en az 3 adım) ve oyuncuların tanınırlığı.
+- **Günlük bulmaca**: tarih seed'iyle seçilir, herkes aynı bulmacayı görür.
+- **Serbest mod**: rastgele çift seçilir; çözülebilir olduğu BFS ile garanti edilir.
+- İlerleme ve seri (streak) bilgisi tarayıcıda (localStorage) tutulur, hesap sistemi yok.
+
+## 4. Yol haritası
+
+### Faz 1 — Ücretsiz veriyle Zincir (şimdi)
+- [ ] `collect.py` ile 6 ligin 2022–2024 kadrolarını topla. Yaklaşık 6 × 3 × 40 = 720 istek, günde ~95 istekle ~8 gün sürer. Durum: Süper Lig 2024 tamam, 2023 yarım.
+- [ ] Bundesliga ve Ligue 1 kapsama (coverage) kontrolü
+- [ ] `build.py`: kadro verisinden takım-sezon grafı, "en az 1 maç" filtresi
+- [ ] Zincir mantığı: BFS, çözülebilirlik, zorluk puanı, günlük bulmaca üretimi
+- [ ] Site iskeleti: veri yükleme ve oyun akışı. Tasarım bu fazın sonunda ayrıca konuşulacak.
+- [ ] TR/EN metin dosyaları
+- [ ] Hakkında sayfası + veri/görsel telif notu
+
+Not: Ücretsiz planda takım başına en fazla 3 sayfa (60 oyuncu) alınabiliyor. Bu kadro için genelde yeter; taşan takımlar build sırasında raporlanır.
+
+### Faz 2 — Pro ayı (ilk oyun yayına hazır olunca)
+- [ ] `collect.py --plan pro`: 2010–2025 sezonları; maç detayları `/fixtures?ids=` ile 20'şerli; `/players` için sayfa sınırı yok; hız ayarlanabilir (~100 istek/dk)
+- [ ] `images.py`: logo (64 px) ve foto (96 px), webp formatında
+- [ ] Tam kapsam: ~95 lig-sezon ≈ 5800 istek, ilk güne sığar
+- [ ] Ay bitmeden ekstra turnuvalar (bkz. açık sorular) ve `/transfers` verisi
+- [ ] Ham veri yedeği: Pro bitince veri bizde kalır
+
+### Faz 3 — Diğer oyunlar
+1. **Kariyer yolu**: kadro verisi + `/transfers` yeterli olabilir; Wikidata yalnızca eksikleri tamamlamak için
+2. **Kadroyu tamamla**: maç detaylarındaki ilk 11'ler
+3. **Maç quiz'i**: maç olayları (gol, kart, değişiklik)
+
+## 5. Açık sorular
+
+1. **Ekstra turnuvalar** (Pro ayında): Pro'da günde 7500 istek hakkı var, ana kapsam ise ilk günü bile doldurmuyor. Kalan 29 günde başka turnuvaların verisini de bedavaya çekebiliriz. Soru şu: lig dışı veya başka ülke verisi de olsun mu? Bunlar zincire yeni bağlantılar ekler, ör. "Galatasaray 2013/14 ŞL kadrosu". Adaylar:
+   - Şampiyonlar Ligi / Avrupa Ligi: ünlü Avrupa maçları, quiz için iyi
+   - Türkiye Kupası / 1. Lig: Türk oyuncularının kariyerleri daha eksiksiz olur
+   - Eredivisie / Portekiz: büyük liglere geçişteki ara duraklar, zincirde köprü kulüpler
+   - Hiçbiri: kapsam olduğu gibi kalır
+2. **Kariyer yolu kaynağı**: API-Football `/transfers` mı, Wikidata mı, ikisi birden mi? (Wikidata'daki Türk kulüp QID'leri ayrıca düzeltilmeli.)
+3. **Alan adı ve yayın yeri**: GitHub Pages mi, Cloudflare Pages mi; özel alan adı olacak mı?
+4. **Sezon açılış sırası**: Faz 1'de 2022–2024 birlikte mi açılsın, yoksa önce sadece 2024 mü?

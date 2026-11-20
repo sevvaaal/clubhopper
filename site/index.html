@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Clubhopper</title>
+  <link rel="icon" href="../brand/favicon.svg">
+  <!-- Prototype: plain layout only, the real design comes later. -->
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 640px; margin: 0 auto; padding: 16px; line-height: 1.4; }
+    header { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+    button { font: inherit; cursor: pointer; }
+    .goal { border: 1px solid #999; padding: 8px 12px; margin: 12px 0; }
+    .chain { list-style: none; padding: 0; }
+    .chain li { padding: 4px 0; }
+    .chain .via { color: #666; padding-left: 16px; }
+    .current { font-weight: bold; }
+    .choices { display: flex; flex-wrap: wrap; gap: 6px; }
+    .msg { min-height: 1.4em; color: #b00; }
+    .won { color: #070; font-weight: bold; }
+    small { color: #666; }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="../brand/logo.svg" alt="Clubhopper" height="40">
+    <div>
+      <button id="mode-daily"></button>
+      <button id="mode-free"></button>
+      <button id="lang"></button>
+    </div>
+  </header>
+
+  <main id="app"><p>…</p></main>
+
+  <footer><small id="about"></small></footer>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

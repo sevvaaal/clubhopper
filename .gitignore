@@ -14,3 +14,4 @@ dist/
 data/raw/
 
 .DS_Store
+site/data/
