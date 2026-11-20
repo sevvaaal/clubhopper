@@ -10,7 +10,7 @@ const TEXT = {
     back: "← Takımlara dön", undo: "Geri al", giveUp: "Pes et", again: "Yeni bulmaca",
     won: (n, best) => `Tebrikler! ${n} adımda ulaştın (en kısa: ${best}).`,
     solution: "Çözüm:",
-    about: "Prototip. Veri: API-Football. Şimdilik yalnızca Süper Lig 2022/23–2024/25. Bir oyuncu ligde en az 1 maça çıktığı takım-sezona sayılır.",
+    about: "Prototip. Veri: API-Football. Şimdilik yalnızca Süper Lig 2022/23–2024/25. Bir oyuncu ligde en az 1 maça çıktığı takım-sezona sayılır. Kulüp logoları ve oyuncu fotoğrafları sahiplerine aittir; yalnızca tanıtım amaçlı, küçük boyutta gösterilir. Kaldırılmasını istediğiniz bir görsel olursa bize yazın.",
   },
   en: {
     daily: "Daily chain", free: "Free play", lang: "TR",
@@ -21,7 +21,7 @@ const TEXT = {
     back: "← Back to teams", undo: "Undo", giveUp: "Give up", again: "New puzzle",
     won: (n, best) => `Well done! You made it in ${n} links (shortest: ${best}).`,
     solution: "Solution:",
-    about: "Prototype. Data: API-Football. For now only Süper Lig 2022/23 to 2024/25. A player counts for a team-season if they played at least 1 league match.",
+    about: "Prototype. Data: API-Football. For now only Süper Lig 2022/23 to 2024/25. A player counts for a team-season if they played at least 1 league match. Club crests and player photos belong to their owners and are shown small, for identification only. Contact us to have any image removed.",
   },
 };
 
@@ -39,6 +39,24 @@ function nodeLabel(id) {
   return `${graph.data.teams[n.team].name} ${n.season}/${String(n.season + 1).slice(2)}`;
 }
 const playerName = (pid) => graph.data.players[pid].name;
+
+// Our own small copies from images.py; initials when there's no picture.
+function initials(name) {
+  const words = name.replace(/\./g, " ").split(/\s+/).filter(Boolean);
+  const pick = words.length > 1 ? [words[0], words[words.length - 1]] : words;
+  return pick.map((w) => w[0]).join("").toLocaleUpperCase("tr");
+}
+function avatar(kind, id, name) {
+  const item = kind === "players" ? graph.data.players[id] : graph.data.teams[id];
+  if (item?.img) return `<img class="pic ${kind}" src="img/${kind}/${id}.webp" alt="" loading="lazy" width="32" height="32">`;
+  const hue = (Number(id) * 47) % 360;
+  return `<span class="pic initials ${kind}" style="--hue:${hue}" aria-hidden="true">${esc(initials(name))}</span>`;
+}
+const playerPic = (pid) => avatar("players", pid, playerName(pid));
+const teamPic = (nodeId) => {
+  const team = graph.nodes.get(nodeId).team;
+  return avatar("teams", team, graph.data.teams[team].name);
+};
 const here = () => state.chain[state.chain.length - 1];
 
 function newPuzzle() {
@@ -53,15 +71,15 @@ function newPuzzle() {
 function chainHtml(path, markLast = false) {
   return `<ol class="chain">${path
     .map((x, i) => {
-      if (i % 2) return `<li class="via">↳ ${esc(nodeLabel(x))}</li>`;
+      if (i % 2) return `<li class="via">↳ ${teamPic(x)} ${esc(nodeLabel(x))}</li>`;
       const cls = markLast && i === path.length - 1 ? ' class="current"' : "";
-      return `<li${cls}>${esc(playerName(x))}</li>`;
+      return `<li${cls}>${playerPic(x)} ${esc(playerName(x))}</li>`;
     })
     .join("")}</ol>`;
 }
 
-const buttons = (items, attr, label) =>
-  `<div class="choices">${items.map((x) => `<button data-${attr}="${x}">${esc(label(x))}</button>`).join("")}</div>`;
+const buttons = (items, attr, label, pic) =>
+  `<div class="choices">${items.map((x) => `<button data-${attr}="${x}">${pic(x)} ${esc(label(x))}</button>`).join("")}</div>`;
 
 function render() {
   const T = t();
@@ -78,7 +96,8 @@ function render() {
   const won = here() === target;
   const done = won || state.gaveUp;
 
-  let html = `<div class="goal">${T.goal(esc(playerName(start)), esc(playerName(target)))}<br><small>${T.best(best)}</small></div>`;
+  const who = (pid) => `${playerPic(pid)} ${esc(playerName(pid))}`;
+  let html = `<div class="goal">${T.goal(who(start), who(target))}<br><small>${T.best(best)}</small></div>`;
   html += chainHtml(state.chain, true);
 
   if (won) {
@@ -87,11 +106,11 @@ function render() {
     html += `<p>${T.solution}</p>${chainHtml(solution)}`;
   } else if (state.team) {
     html += `<p>${T.pickMate(esc(nodeLabel(state.team)))}</p>`;
-    html += buttons(squad(graph, state.team, here()), "player", (pid) => playerName(pid));
+    html += buttons(squad(graph, state.team, here()), "player", playerName, playerPic);
     html += `<p><button id="back">${T.back}</button></p>`;
   } else {
     html += `<p>${T.pickTeam(esc(playerName(here())))}</p>`;
-    html += buttons(teamSeasons(graph, here()), "team", nodeLabel);
+    html += buttons(teamSeasons(graph, here()), "team", nodeLabel, teamPic);
   }
 
   html += `<p>`;

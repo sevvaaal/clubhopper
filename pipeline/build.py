@@ -9,6 +9,9 @@ to both.
 
     python build.py            # writes site/data/game.json
 
+Run it again after images.py, so each team and player knows whether we have
+its picture ("img"); the site shows initials for the ones we don't.
+
 Only the league-seasons whose squads have been collected are included. Seasons
 where some teams are still missing are included with the teams we have, and
 the report says which ones are partial.
@@ -20,6 +23,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 RAW = ROOT / "data" / "raw"
 OUT = ROOT / "site" / "data" / "game.json"
+IMG = ROOT / "site" / "img"  # filled by images.py
 
 # Same ids as collect.py.
 LEAGUES = {
@@ -68,7 +72,12 @@ def main() -> None:
                 team_pages_files = pages.get(team["id"])
                 if not team_pages_files:
                     continue
-                teams[team["id"]] = {"name": team["name"], "code": team.get("code"), "logo": team["logo"]}
+                teams[team["id"]] = {
+                    "name": team["name"],
+                    "code": team.get("code"),
+                    "logo": team["logo"],
+                    "img": (IMG / "teams" / f"{team['id']}.webp").exists(),
+                }
                 members = {}
                 total_pages = 1
                 for f in team_pages_files:
@@ -91,6 +100,7 @@ def main() -> None:
                             "nat": p.get("nationality"),
                             "born": (p.get("birth") or {}).get("date"),
                             "photo": p.get("photo"),
+                            "img": (IMG / "players" / f"{p['id']}.webp").exists(),
                         })
                         members[p["id"]] = [p["id"], apps, minutes]
                 if len(team_pages_files) < total_pages:

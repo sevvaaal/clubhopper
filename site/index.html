@@ -19,6 +19,13 @@
     .msg { min-height: 1.4em; color: #b00; }
     .won { color: #070; font-weight: bold; }
     small { color: #666; }
+    .pic { width: 32px; height: 32px; vertical-align: middle; flex: none; }
+    .pic.players { border-radius: 50%; object-fit: cover; }
+    .pic.teams { object-fit: contain; }
+    .initials { display: inline-flex; align-items: center; justify-content: center; border-radius: 50%;
+      font-size: 12px; font-weight: bold; color: #fff; background: hsl(var(--hue) 45% 42%); }
+    .initials.teams { border-radius: 6px; }
+    .choices button { display: inline-flex; align-items: center; gap: 6px; }
   </style>
 </head>
 <body>
