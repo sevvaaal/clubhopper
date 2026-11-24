@@ -10,7 +10,7 @@ const TEXT = {
     back: "← Takımlara dön", undo: "Geri al", giveUp: "Pes et", again: "Yeni bulmaca",
     won: (n, best) => `Tebrikler! ${n} adımda ulaştın (en kısa: ${best}).`,
     solution: "Çözüm:",
-    about: "Prototip. Veri: API-Football. Şimdilik yalnızca Süper Lig 2022/23–2024/25. Bir oyuncu ligde en az 1 maça çıktığı takım-sezona sayılır. Kulüp logoları ve oyuncu fotoğrafları sahiplerine aittir; yalnızca tanıtım amaçlı, küçük boyutta gösterilir. Kaldırılmasını istediğiniz bir görsel olursa bize yazın.",
+    about: (seasons) => `Prototip. Veri: API-Football. Şu an açık: ${seasons}. Bir oyuncu ligde en az 1 maça çıktığı takım-sezona sayılır. Kulüp logoları ve oyuncu fotoğrafları sahiplerine aittir; yalnızca tanıtım amaçlı, küçük boyutta gösterilir. Kaldırılmasını istediğiniz bir görsel olursa bize yazın.`,
   },
   en: {
     daily: "Daily chain", free: "Free play", lang: "TR",
@@ -21,7 +21,7 @@ const TEXT = {
     back: "← Back to teams", undo: "Undo", giveUp: "Give up", again: "New puzzle",
     won: (n, best) => `Well done! You made it in ${n} links (shortest: ${best}).`,
     solution: "Solution:",
-    about: "Prototype. Data: API-Football. For now only Süper Lig 2022/23 to 2024/25. A player counts for a team-season if they played at least 1 league match. Club crests and player photos belong to their owners and are shown small, for identification only. Contact us to have any image removed.",
+    about: (seasons) => `Prototype. Data: API-Football. Open now: ${seasons}. A player counts for a team-season if they played at least 1 league match. Club crests and player photos belong to their owners and are shown small, for identification only. Contact us to have any image removed.`,
   },
 };
 
@@ -57,6 +57,21 @@ const teamPic = (nodeId) => {
   const team = graph.nodes.get(nodeId).team;
   return avatar("teams", team, graph.data.teams[team].name);
 };
+// "Süper Lig 2022/23–2024/25, Premier League 2023/24 (partial)–2024/25", from the data.
+function openSeasons() {
+  const partial = state.lang === "tr" ? "eksik" : "partial";
+  const byLeague = new Map();
+  for (const s of graph.data.seasons) {
+    if (!byLeague.has(s.league)) byLeague.set(s.league, []);
+    byLeague.get(s.league).push(s);
+  }
+  return [...byLeague].map(([league, list]) => {
+    const label = (s) => `${s.season}/${String(s.season + 1).slice(2)}${s.teams < s.of ? ` (${partial})` : ""}`;
+    list.sort((a, b) => a.season - b.season);
+    const range = list.length > 1 ? `${label(list[0])}–${label(list[list.length - 1])}` : label(list[0]);
+    return `${graph.data.leagues[league]} ${range}`;
+  }).join(", ");
+}
 const here = () => state.chain[state.chain.length - 1];
 
 function newPuzzle() {
@@ -88,7 +103,7 @@ function render() {
   el("mode-daily").disabled = state.mode === "daily";
   el("mode-free").disabled = state.mode === "free";
   el("lang").textContent = T.lang;
-  el("about").textContent = T.about;
+  el("about").textContent = T.about(openSeasons());
   document.documentElement.lang = state.lang;
 
   const { start, target, solution } = state.puzzle;

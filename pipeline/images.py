@@ -59,7 +59,7 @@ def main() -> None:
     jobs = [("teams", tid, t["logo"], shrink_logo) for tid, t in game["teams"].items() if t.get("logo")]
     jobs += [("players", pid, p["photo"], shrink_photo) for pid, p in game["players"].items() if p.get("photo")]
 
-    client = httpx.Client(timeout=30, follow_redirects=True, headers={"User-Agent": "clubhopper-image-cache"})
+    client = httpx.Client(timeout=30, follow_redirects=True, headers={"User-Agent": "image-cache"})
     fetched = failed = 0
     try:
         for kind, key, url, shrink in jobs:

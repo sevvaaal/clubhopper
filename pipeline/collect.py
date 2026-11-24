@@ -132,6 +132,21 @@ def collect_squads(api: Api, league: str, league_id: int, season: int) -> None:
     (folder / "SQUADS_COMPLETE").write_text("")
 
 
+def collect_transfers(api: Api) -> None:
+    """Transfers of every team whose squad we have, one request per team.
+
+    The API copies some players' stats to clubs they only joined later;
+    build.py uses these dates to drop those.
+    """
+    slugs = list(LEAGUES)
+    folders = sorted(RAW.glob("*/*/team-players"), key=lambda f: (slugs.index(f.parts[-3]), f))
+    team_ids = dict.fromkeys(int(f.stem.split("-page-")[0]) for d in folders for f in sorted(d.glob("*-page-1.json")))
+    for team_id in team_ids:
+        out = RAW / "transfers" / f"team-{team_id}.json"
+        if not out.exists():
+            save(out, api.get("/transfers", team=team_id))
+
+
 def ranked_fixture_ids(fixtures: list[dict]) -> list[int]:
     """Finished matches, most interesting first: matches between teams near the
     top of the final table (title races, derbies between big clubs) come first.
@@ -195,10 +210,13 @@ def main() -> None:
     api = Api(args.dry_run)
     queue = [(league, league_id, season) for league, league_id in LEAGUES.items() for season in SEASONS]
     try:
+        # Transfers of the teams we already have, so wrong squad entries get fixed first.
+        collect_transfers(api)
         # Phase 1: squads for every league-season (enough for the chain and career games).
         for league, league_id, season in queue:
             if not (RAW / league / str(season) / "SQUADS_COMPLETE").exists():
                 collect_squads(api, league, league_id, season)
+        collect_transfers(api)  # teams added just now
         # Phase 2: match details, league-season by league-season.
         for league, _, season in queue:
             if not (RAW / league / str(season) / "MATCHES_COMPLETE").exists():

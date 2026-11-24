@@ -49,6 +49,67 @@ def team_pages(folder: Path) -> dict[int, list[Path]]:
     return pages
 
 
+def load_transfers() -> dict[tuple[int, int], list[tuple[str, str, int | None]]]:
+    """(player, team) -> that player's moves at that team: (date, "in"/"out", other team)."""
+    moves: dict = {}
+    for f in (RAW / "transfers").glob("team-*.json"):
+        team_id = int(f.stem.removeprefix("team-"))
+        for row in load(f)["response"]:
+            for t in row["transfers"]:
+                into, out = t["teams"]["in"]["id"], t["teams"]["out"]["id"]
+                if not t.get("date") or into == out or team_id not in (into, out):
+                    continue
+                kind, other = ("in", out) if into == team_id else ("out", into)
+                moves.setdefault((row["player"]["id"], team_id), []).append((t["date"], kind, other))
+    return {key: sorted(set(m), key=lambda x: x[0]) for key, m in moves.items()}
+
+
+def joined_later(moves: list, season: int) -> bool:
+    """The first thing we know about the player at this team is arriving after the season."""
+    return bool(moves) and moves[0][1] == "in" and moves[0][0] > f"{season + 1}-06-15"
+
+
+def drop_wrong_entries(nodes: list[dict]) -> dict[str, int]:
+    """Remove players from squads they weren't part of.
+
+    The API copies some players' season stats to another of their clubs. Two
+    signs: the player only joined the club after that season, or the same
+    minutes appear at two clubs in one league-season. Copies the transfer dates
+    can't settle are hidden at every club involved rather than guessed.
+    """
+    transfers = load_transfers()
+    counts = {"joined later": 0, "unresolved copies": 0}
+    drop: set[tuple[str, int]] = set()
+    groups: dict = {}
+    for n in nodes:
+        for pid, _, minutes in n["players"]:
+            if joined_later(transfers.get((pid, n["team"]), []), n["season"]):
+                drop.add((n["id"], pid))
+                counts["joined later"] += 1
+            groups.setdefault((pid, n["league"], n["season"], minutes), []).append(n)
+
+    for (pid, _, season, _), group in groups.items():
+        left = [n for n in group if (n["id"], pid) not in drop]
+        if len(left) < 2:
+            continue
+        # A move between two of these clubs during the season makes both real.
+        start, end = f"{season}-07-01", f"{season + 1}-06-15"
+        ids = {n["team"] for n in left}
+        confirmed = set()
+        for n in left:
+            for date, _, other in transfers.get((pid, n["team"]), []):
+                if other in ids and start <= date <= end:
+                    confirmed |= {n["team"], other}
+        for n in left:
+            if n["team"] not in confirmed:
+                drop.add((n["id"], pid))
+                counts["unresolved copies"] += 1
+
+    for n in nodes:
+        n["players"] = [m for m in n["players"] if (n["id"], m[0]) not in drop]
+    return counts
+
+
 def main() -> None:
     teams: dict[int, dict] = {}
     players: dict[int, dict] = {}
@@ -123,6 +184,10 @@ def main() -> None:
                 "capped": capped,
             })
 
+    dropped = drop_wrong_entries(nodes)
+    used = {m[0] for n in nodes for m in n["players"]}
+    players = {pid: p for pid, p in players.items() if pid in used}
+
     data = {
         "leagues": {slug: name for slug, (_, name) in LEAGUES.items()},
         "seasons": seasons,
@@ -136,6 +201,8 @@ def main() -> None:
     links = sum(1 for p in players if sum(1 for n in nodes for m in n["players"] if m[0] == p) > 1)
     print(f"{len(nodes)} team-seasons, {len(players)} players ({links} in more than one), "
           f"{OUT.stat().st_size // 1024} KB -> {OUT.relative_to(ROOT)}")
+    have = sum((RAW / "transfers" / f"team-{t}.json").exists() for t in teams)
+    print(f"Wrong entries removed: {dropped} (transfers known for {have} of {len(teams)} teams)")
     for s in seasons:
         partial = "" if s["teams"] == s["of"] else f"  PARTIAL: {s['teams']} of {s['of']} teams"
         capped = f"  (squads cut at 3 pages: {', '.join(s['capped'])})" if s["capped"] else ""
