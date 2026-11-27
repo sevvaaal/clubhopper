@@ -57,7 +57,9 @@ def main() -> None:
     game = json.loads(GAME.read_text(encoding="utf-8"))
     hashes: dict[str, str] = json.loads(HASHES.read_text()) if HASHES.exists() else {}
     jobs = [("teams", tid, t["logo"], shrink_logo) for tid, t in game["teams"].items() if t.get("logo")]
-    jobs += [("players", pid, p["photo"], shrink_photo) for pid, p in game["players"].items() if p.get("photo")]
+    # Players seen only in old lineups have no photo URL; the API's media URLs follow one pattern.
+    media = "https://media.api-sports.io/football/players/{}.png"
+    jobs += [("players", pid, p.get("photo") or media.format(pid), shrink_photo) for pid, p in game["players"].items()]
 
     client = httpx.Client(timeout=30, follow_redirects=True, headers={"User-Agent": "image-cache"})
     fetched = failed = 0

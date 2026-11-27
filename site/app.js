@@ -5,23 +5,23 @@ const TEXT = {
     daily: "Günün zinciri", free: "Serbest", lang: "EN",
     goal: (a, b) => `<b>${a}</b> oyuncusundan <b>${b}</b> oyuncusuna ulaş.`,
     best: (n) => `En kısa zincir ${n} adım.`,
-    pickTeam: (p) => `${p} hangi takımda oynadı?`,
+    pickTeam: (p) => `${p} ile hangi takıma gitmek istersin?`,
     pickMate: (team) => `${team} kadrosundan bir takım arkadaşı seç:`,
     back: "← Takımlara dön", undo: "Geri al", giveUp: "Pes et", again: "Yeni bulmaca",
     won: (n, best) => `Tebrikler! ${n} adımda ulaştın (en kısa: ${best}).`,
-    solution: "Çözüm:",
-    about: (seasons) => `Prototip. Veri: API-Football. Şu an açık: ${seasons}. Bir oyuncu ligde en az 1 maça çıktığı takım-sezona sayılır. Kulüp logoları ve oyuncu fotoğrafları sahiplerine aittir; yalnızca tanıtım amaçlı, küçük boyutta gösterilir. Kaldırılmasını istediğiniz bir görsel olursa bize yazın.`,
+    solution: "En kısa zincir:",
+    about: (seasons) => `Prototip. Veri: API-Football. Şu an açık: ${seasons}. Bir oyuncu, ligde ya da Avrupa kupalarında en az 1 dakika oynadığı takım-sezona sayılır. Kulüp logoları ve oyuncu fotoğrafları sahiplerine aittir; yalnızca tanıtım amaçlı, küçük boyutta gösterilir. Kaldırılmasını istediğiniz bir görsel olursa bize yazın.`,
   },
   en: {
     daily: "Daily chain", free: "Free play", lang: "TR",
     goal: (a, b) => `Get from <b>${a}</b> to <b>${b}</b>.`,
     best: (n) => `The shortest chain has ${n} links.`,
-    pickTeam: (p) => `Which team did ${p} play for?`,
+    pickTeam: (p) => `Which of ${p}'s teams do you want to go to?`,
     pickMate: (team) => `Pick a teammate from ${team}:`,
     back: "← Back to teams", undo: "Undo", giveUp: "Give up", again: "New puzzle",
     won: (n, best) => `Well done! You made it in ${n} links (shortest: ${best}).`,
-    solution: "Solution:",
-    about: (seasons) => `Prototype. Data: API-Football. Open now: ${seasons}. A player counts for a team-season if they played at least 1 league match. Club crests and player photos belong to their owners and are shown small, for identification only. Contact us to have any image removed.`,
+    solution: "Shortest chain:",
+    about: (seasons) => `Prototype. Data: API-Football. Open now: ${seasons}. A player counts for a team-season if they played at least 1 minute for that club in the league or a European cup. Club crests and player photos belong to their owners and are shown small, for identification only. Contact us to have any image removed.`,
   },
 };
 
@@ -116,7 +116,7 @@ function render() {
   html += chainHtml(state.chain, true);
 
   if (won) {
-    html += `<p class="won">${T.won(pathLength(state.chain), best)}</p>`;
+    html += `<p class="won">${T.won(pathLength(state.chain), best)}</p><p>${T.solution}</p>${chainHtml(solution)}`;
   } else if (state.gaveUp) {
     html += `<p>${T.solution}</p>${chainHtml(solution)}`;
   } else if (state.team) {

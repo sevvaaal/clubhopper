@@ -10,9 +10,11 @@ Son güncelleme: 19 Kasım 2026. Bu belge kararları ve yol haritasını tek yer
 | Oyun modu | **Günlük bulmaca** (herkese aynı) **+ serbest mod** (sınırsız rastgele). |
 | Dil | **TR + EN**, varsayılan Türkçe. |
 | Kapsam | Süper Lig + büyük 5 lig, milli takım yok. Sezonlar veri geldikçe açılır, diğerleri "yakında". |
-| Kadro eşiği | Oyuncu bir takım-sezona **ligde en az 1 maça çıktıysa** aittir. |
+| Ekstra turnuvalar | Pro ayında **Şampiyonlar Ligi** ve **Avrupa Ligi** de çekilir. Türkiye Kupası, 1. Lig, Eredivisie ve Portekiz yok. |
+| Kadro eşiği | Oyuncu, ligde ya da Avrupa kupalarında **en az 1 dakika** oynadığı takım-sezona aittir. Kaynak maç kadroları (ilk 11, oyuna girenler). Şampiyonlar Ligi ve Avrupa Ligi ayrı düğüm değil, kulübün o sezonuna eklenir. |
 | Altyapı | **Statik site**: önceden üretilmiş JSON + tarayıcıda graf. Sunucu ve veritabanı yok. |
-| Pro plan | **İlk oyun ücretsiz veriyle hazır olunca** alınır (~19€, 1 ay, otomatik yenileme yok). |
+| Pro plan | **Alındı: 26 Kasım 2026, bitiş 26 Aralık 2026 17:13 (TR).** Günde 7500 istek. Hatırlatmalar 21 ve 25 Aralık 10:00'da. |
+| Sezonlar (Pro) | Büyük 5 lig 2010/11–2025/26, Süper Lig ve Şampiyonlar Ligi 2011/12–2025/26, Avrupa Ligi 2014/15–2025/26 (API bunlardan eskisini vermiyor). Devam eden 2026/27 şimdilik yok. Hepsinde kadro, ilk 11 ve maç olayları var. |
 | Görseller | Takım logosu ve oyuncu fotoğrafı küçültülüp kendi sitemizden sunulur. Yoksa baş harf avatarı kullanılır. Hakkında sayfasında kaynak/telif notu olur. |
 | Tasarım | Logo hazır (taslak B). Site tasarımına henüz başlanmayacak. |
 
@@ -75,7 +77,7 @@ Not: Ücretsiz planda takım başına en fazla 3 sayfa (60 oyuncu) alınabiliyor
 - [ ] `collect.py --plan pro`: 2010–2025 sezonları; maç detayları `/fixtures?ids=` ile 20'şerli; `/players` için sayfa sınırı yok; hız ayarlanabilir (~100 istek/dk)
 - [ ] `images.py`: logo (64 px) ve foto (96 px), webp formatında
 - [ ] Tam kapsam: ~95 lig-sezon ≈ 5800 istek, ilk güne sığar
-- [ ] Ay bitmeden ekstra turnuvalar (bkz. açık sorular) ve `/transfers` verisi
+- [x] Tam çekim bitti (27 Kasım): 122 turnuva-sezon, ~41.500 maç, 700 kulübün transferleri; ~10.400 istek, 1,5 GB ham veri. Şampiyonlar Ligi ve Avrupa Ligi kulübün sezonuna eklendi.
 - [ ] Ham veri yedeği: Pro bitince veri bizde kalır
 
 ### Faz 3 — Diğer oyunlar
@@ -85,11 +87,6 @@ Not: Ücretsiz planda takım başına en fazla 3 sayfa (60 oyuncu) alınabiliyor
 
 ## 5. Açık sorular
 
-1. **Ekstra turnuvalar** (Pro ayında): Pro'da günde 7500 istek hakkı var, ana kapsam ise ilk günü bile doldurmuyor. Kalan 29 günde başka turnuvaların verisini de bedavaya çekebiliriz. Soru şu: lig dışı veya başka ülke verisi de olsun mu? Bunlar zincire yeni bağlantılar ekler, ör. "Galatasaray 2013/14 ŞL kadrosu". Adaylar:
-   - Şampiyonlar Ligi / Avrupa Ligi: ünlü Avrupa maçları, quiz için iyi
-   - Türkiye Kupası / 1. Lig: Türk oyuncularının kariyerleri daha eksiksiz olur
-   - Eredivisie / Portekiz: büyük liglere geçişteki ara duraklar, zincirde köprü kulüpler
-   - Hiçbiri: kapsam olduğu gibi kalır
-2. **Kariyer yolu kaynağı**: API-Football `/transfers` mı, Wikidata mı, ikisi birden mi? (Wikidata'daki Türk kulüp QID'leri ayrıca düzeltilmeli.)
-3. **Alan adı ve yayın yeri**: GitHub Pages mi, Cloudflare Pages mi; özel alan adı olacak mı?
-4. **Sezon açılış sırası**: Faz 1'de 2022–2024 birlikte mi açılsın, yoksa önce sadece 2024 mü?
+1. **Kariyer yolu kaynağı**: API-Football `/transfers` mı, Wikidata mı, ikisi birden mi? (Wikidata'daki Türk kulüp QID'leri ayrıca düzeltilmeli.)
+2. **Alan adı ve yayın yeri**: GitHub Pages mi, Cloudflare Pages mi; özel alan adı olacak mı?
+3. **Sezon açılış sırası**: Faz 1'de 2022–2024 birlikte mi açılsın, yoksa önce sadece 2024 mü?
