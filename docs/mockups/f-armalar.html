@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clubhopper · Armalar ve istatistikler</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+  /* Stats + achievements, built on the patch language of direction D.
+     Earned achievements are sewn patches; locked ones are only the stitch outline, waiting to be sewn. */
+  :root {
+    --night: #0d1a36;
+    --night-2: #1a2d57;
+    --grass: #1f5c2c;
+    --thread: #f3efe3;
+    --thread-dim: rgba(243,239,227,.45);
+    --gold: #e4b23a;
+    --sky-blue: #4b8be0;
+    --red: #d63a3a;
+    --green: #2f8f45;
+    --ink: #10172b;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    min-height: 100vh; color: var(--thread);
+    font-family: "Baloo 2", sans-serif; font-size: 18px; line-height: 1.35;
+    background:
+      radial-gradient(ellipse 30% 14% at 10% 0%, rgba(255,255,240,.45), transparent 70%),
+      radial-gradient(ellipse 30% 14% at 90% 0%, rgba(255,255,240,.45), transparent 70%),
+      linear-gradient(var(--night), var(--night-2) 40%, #183a3a 70%, var(--grass));
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 20px 20px 60px; }
+  header { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  header img { height: 44px; }
+  header nav { display: flex; gap: 10px; align-items: center; }
+  header a { color: var(--thread); font-weight: 700; }
+  .lang { font: 700 16px "Baloo 2", sans-serif; background: var(--thread); color: var(--ink); border: 0; border-radius: 999px; padding: 4px 14px; cursor: pointer; }
+  h1 { font-size: clamp(34px, 5vw, 56px); line-height: 1; margin: 34px 0 6px; font-weight: 800; }
+  .lead { margin: 0 0 30px; color: #cfd8ec; max-width: 52ch; }
+  h2 { font-size: 28px; margin: 48px 0 6px; font-weight: 800; }
+  h2 + p { margin: 0 0 22px; color: #cfd8ec; }
+
+  /* patch recipe shared with d-arma.html */
+  .patch {
+    position: relative; color: var(--ink);
+    background-image: repeating-linear-gradient(115deg, rgba(255,255,255,.09) 0 2px, transparent 2px 5px);
+    box-shadow: inset 0 0 0 6px var(--edge, var(--thread)), 0 3px 0 rgba(0,0,0,.25), 0 10px 18px rgba(0,0,0,.45);
+  }
+  .patch::after { content: ""; position: absolute; inset: 10px; border: 2px dashed rgba(255,255,255,.55); border-radius: inherit; pointer-events: none; }
+
+  /* --- stats: one sewn name tape per game, like a kit bag --- */
+  .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+  .tape { border-radius: 14px; padding: 18px 22px 20px; display: grid; grid-template-columns: 1fr auto; gap: 4px 18px; align-items: end; }
+  .tape h3 { margin: 0; font-size: 24px; font-weight: 800; grid-column: 1 / -1; }
+  .tape dl { display: flex; gap: 22px; margin: 6px 0 0; }
+  .tape dt { font-size: 15px; font-weight: 500; opacity: .85; }
+  .tape dd { margin: 0; font-size: 30px; font-weight: 800; line-height: 1; }
+  .tape .bar { grid-column: 1 / -1; height: 10px; border-radius: 6px; background: rgba(16,23,43,.18); margin-top: 10px; overflow: hidden; }
+  .tape .bar i { display: block; height: 100%; background: var(--ink); border-radius: inherit; }
+  .t-chain { background-color: var(--thread); --edge: var(--ink); }
+  .t-career { background-color: var(--sky-blue); --edge: var(--ink); color: #fff; }
+  .t-career .bar { background: rgba(255,255,255,.25); } .t-career .bar i { background: #fff; }
+  .t-lineup { background-color: var(--green); --edge: var(--thread); color: #fff; }
+  .t-lineup .bar { background: rgba(255,255,255,.25); } .t-lineup .bar i { background: var(--thread); }
+  .t-quiz { background-color: var(--gold); --edge: #7a5410; }
+
+  /* --- streak: the last 28 days as stitches on a strip --- */
+  .streak { margin-top: 22px; display: grid; grid-template-columns: auto 1fr; gap: 10px 22px; align-items: center; background: rgba(13,26,54,.6); border: 2px dashed var(--thread-dim); border-radius: 14px; padding: 16px 20px; }
+  .streak strong { font-size: 40px; line-height: 1; font-weight: 800; color: var(--gold); }
+  .streak strong small { display: block; font-size: 15px; color: var(--thread); font-weight: 500; }
+  .days { display: grid; grid-template-columns: repeat(14, 1fr); gap: 6px; }
+  .days i { aspect-ratio: 1; border-radius: 50%; border: 2px dashed var(--thread-dim); }
+  .days i.on { border: 0; background: radial-gradient(circle at 35% 30%, #fff3c8, var(--gold) 60%, #a37812); }
+  .days i.today { outline: 2px solid var(--thread); outline-offset: 2px; }
+
+  /* --- achievements --- */
+  .count { display: inline-block; margin-left: 10px; font-size: 18px; font-weight: 700; color: var(--gold); vertical-align: middle; }
+  .badges { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 34px 22px; }
+  .badge { display: grid; justify-items: center; text-align: center; gap: 10px; }
+  .badge .patch { width: 150px; height: 150px; display: grid; place-items: center; transform: rotate(var(--r, 0deg)); }
+  .badge b { font-size: 20px; font-weight: 800; line-height: 1.1; }
+  .badge > span { font-size: 15px; color: #cfd8ec; max-width: 22ch; }
+  .badge em { font-style: normal; font-size: 14px; color: var(--gold); font-weight: 700; }
+  .badge svg { width: 64px; height: 64px; }
+  .badge .num { font-size: 56px; font-weight: 800; line-height: 1; }
+  /* shapes */
+  .s-circle { border-radius: 50%; }
+  .s-shield { border-radius: 18px 18px 50% 50%; }
+  .s-rounded { border-radius: 26px; }
+  .s-hex { clip-path: polygon(25% 3%, 75% 3%, 100% 50%, 75% 97%, 25% 97%, 0 50%); box-shadow: none; }
+  .s-hex::after { display: none; }
+  /* locked: just the stitch outline, not sewn yet */
+  .locked .patch { background: transparent; box-shadow: none; color: var(--thread-dim); transform: none; }
+  .locked .patch::after { border-color: var(--thread-dim); inset: 0; }
+  .locked .s-hex { clip-path: none; border-radius: 26px; }
+  .locked .s-hex::after { display: block; }
+  .progress { width: 120px; height: 8px; border-radius: 4px; background: rgba(243,239,227,.15); overflow: hidden; }
+  .progress i { display: block; height: 100%; background: var(--thread); }
+  .badge:focus-within .patch { outline: 3px solid var(--gold); outline-offset: 8px; }
+  a:focus-visible, button:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+
+  @media (max-width: 680px) {
+    .stats { grid-template-columns: 1fr; }
+    .days { grid-template-columns: repeat(7, 1fr); }
+    .streak { grid-template-columns: 1fr; }
+    .badges { grid-template-columns: repeat(2, 1fr); gap: 26px 12px; }
+    .badge .patch { width: 124px; height: 124px; }
+    .badge svg { width: 50px; height: 50px; }
+    .badge .num { font-size: 44px; }
+    header nav a { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <img src="../../brand/logo.svg" alt="Clubhopper">
+    <nav><a href="d-arma.html">Ana sayfa</a><button class="lang" type="button">EN</button></nav>
+  </header>
+
+  <h1>Armaların</h1>
+  <p class="lead">Oynadıkça forma koleksiyonuna yeni armalar dikilir. İstatistiklerin bu tarayıcıda saklanır.</p>
+
+  <section aria-labelledby="stats-h">
+    <h2 id="stats-h">İstatistikler</h2>
+    <p>Her oyunda kaç kez oynadın ve ne kadarını çözdün.</p>
+    <div class="stats">
+      <article class="patch tape t-chain">
+        <h3>Zincir</h3>
+        <dl><div><dt>Oynandı</dt><dd>24</dd></div><div><dt>Çözüldü</dt><dd>19</dd></div><div><dt>En kısa</dt><dd>2 adım</dd></div></dl>
+        <div class="bar" aria-label="Yüzde 79 çözüldü"><i style="width:79%"></i></div>
+      </article>
+      <article class="patch tape t-career">
+        <h3>Kariyer yolu</h3>
+        <dl><div><dt>Oynandı</dt><dd>15</dd></div><div><dt>Bulundu</dt><dd>6</dd></div><div><dt>Ort. ipucu</dt><dd>3,2</dd></div></dl>
+        <div class="bar" aria-label="Yüzde 40 bulundu"><i style="width:40%"></i></div>
+      </article>
+      <article class="patch tape t-lineup">
+        <h3>Kadroyu tamamla</h3>
+        <dl><div><dt>Oynandı</dt><dd>9</dd></div><div><dt>Tam 11</dt><dd>4</dd></div><div><dt>Ort. yanlış</dt><dd>2,1</dd></div></dl>
+        <div class="bar" aria-label="Yüzde 44 tamamlandı"><i style="width:44%"></i></div>
+      </article>
+      <article class="patch tape t-quiz">
+        <h3>Maç quiz'i</h3>
+        <dl><div><dt>Oynandı</dt><dd>31</dd></div><div><dt>Bilindi</dt><dd>22</dd></div><div><dt>Ort. puan</dt><dd>3,4</dd></div></dl>
+        <div class="bar" aria-label="Yüzde 71 bilindi"><i style="width:71%"></i></div>
+      </article>
+    </div>
+
+    <div class="streak">
+      <strong>3 gün<small>En uzun seri: 9 gün</small></strong>
+      <div class="days" aria-label="Son 14 gün: 9 gün oynandı">
+        <i class="on"></i><i class="on"></i><i></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i>
+        <i></i><i></i><i class="on"></i><i></i><i class="on"></i><i class="on"></i><i class="on today"></i>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="badges-h">
+    <h2 id="badges-h">Armalar <span class="count">9 armadan 5'i dikildi</span></h2>
+    <p>Kilitli armalar sadece dikiş izi olarak görünür. Altındaki çizgi ne kadar kaldığını gösterir.</p>
+    <ul class="badges">
+      <li class="badge">
+        <div class="patch s-circle" style="background-color:var(--thread);--edge:var(--ink);--r:-4deg">
+          <svg viewBox="0 0 60 60" aria-hidden="true"><g fill="none" stroke="#10172b" stroke-width="6"><rect x="4" y="18" width="30" height="22" rx="11"/><rect x="26" y="18" width="30" height="22" rx="11"/></g></svg>
+        </div>
+        <b>İlk halka</b><span>İlk zincirini tamamla.</span><em>3 Kasım'da dikildi</em>
+      </li>
+      <li class="badge">
+        <div class="patch s-shield" style="background-color:var(--red);--edge:var(--thread);--r:3deg;color:#fff">
+          <svg viewBox="0 0 60 60" aria-hidden="true"><path d="M8 46 L22 30 L32 38 L52 14" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="52" cy="14" r="5" fill="#fff"/></svg>
+        </div>
+        <b>Kestirme</b><span>Bir zinciri en kısa yoldan çöz.</span><em>12 Kasım'da dikildi</em>
+      </li>
+      <li class="badge">
+        <div class="patch s-rounded" style="background-color:#6b1f2a;--edge:var(--gold);--r:-2deg">
+          <div style="display:flex;gap:6px"><img src="../../site/img/teams/645.webp" alt="" width="46" height="46"><img src="../../site/img/teams/611.webp" alt="" width="46" height="46"></div>
+        </div>
+        <b>Derbi gecesi</b><span>Bir Galatasaray–Fenerbahçe maçını quiz'de bil.</span><em>20 Kasım'da dikildi</em>
+      </li>
+      <li class="badge">
+        <div class="patch s-hex" style="background-color:var(--sky-blue);--r:2deg;color:#fff">
+          <svg viewBox="0 0 60 60" aria-hidden="true"><path d="M30 6 L36 22 L53 22 L39 32 L44 49 L30 39 L16 49 L21 32 L7 22 L24 22 Z" fill="#fff"/></svg>
+        </div>
+        <b>Avrupa gecesi</b><span>Bir Şampiyonlar Ligi eleme maçını bil.</span><em>22 Kasım'da dikildi</em>
+      </li>
+      <li class="badge">
+        <div class="patch s-circle" style="background-color:var(--gold);--edge:#7a5410;--r:5deg">
+          <span class="num">3</span>
+        </div>
+        <b>Üç gün üst üste</b><span>3 gün seri yap.</span><em>Bugün dikildi</em>
+      </li>
+      <li class="badge locked">
+        <div class="patch s-shield"><span class="num">7</span></div>
+        <b>Tam hafta</b><span>7 gün seri yap.</span>
+        <div class="progress" aria-label="7 günden 3'ü"><i style="width:43%"></i></div>
+      </li>
+      <li class="badge locked">
+        <div class="patch s-rounded"><span class="num">11</span></div>
+        <b>Eksiksiz 11</b><span>Bir kadroyu hiç ipucu almadan tamamla.</span>
+        <div class="progress" aria-label="Henüz yok"><i style="width:0%"></i></div>
+      </li>
+      <li class="badge locked">
+        <div class="patch s-circle">
+          <svg viewBox="0 0 60 60" aria-hidden="true"><circle cx="26" cy="26" r="15" fill="none" stroke="currentColor" stroke-width="6"/><path d="M37 37 L52 52" stroke="currentColor" stroke-width="7" stroke-linecap="round"/></svg>
+        </div>
+        <b>İz sürücü</b><span>10 kariyer yolu bul.</span>
+        <div class="progress" aria-label="10'dan 6'sı"><i style="width:60%"></i></div>
+      </li>
+      <li class="badge locked">
+        <div class="patch s-hex">
+          <svg viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="22" fill="none" stroke="currentColor" stroke-width="5"/><path d="M8 30 H52 M30 8 C18 20 18 40 30 52 M30 8 C42 20 42 40 30 52" fill="none" stroke="currentColor" stroke-width="4"/></svg>
+        </div>
+        <b>Altı lig</b><span>Altı ligin hepsinden oyuncuyla bir zincir kur.</span>
+        <div class="progress" aria-label="6 ligden 4'ü"><i style="width:67%"></i></div>
+      </li>
+    </ul>
+  </section>
+</div>
+</body>
+</html>

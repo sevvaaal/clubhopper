@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clubhopper · Langırt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Barlow+Condensed:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  /* Direction B: the page is a foosball table seen from above. Each game is a rod. */
+  :root {
+    --felt: #3c8a3e;
+    --felt-dark: #337a36;
+    --chalk: #f2f5ea;
+    --wood: #6b3d1c;
+    --wood-light: #8d5628;
+    --red: #d3272b;
+    --blue: #2356b8;
+    --chrome: #d6dadf;
+    --ink: #1f160e;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: #2a1a0d url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cpath d='M0 20q60 -14 120 0M0 60q60 12 120 0M0 100q60 -10 120 0' stroke='%23000' stroke-opacity='.18' fill='none'/%3E%3C/svg%3E");
+    color: var(--chalk);
+    font-family: "Barlow Condensed", sans-serif;
+    font-size: 20px;
+    line-height: 1.3;
+  }
+  .table {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 22px;
+    background: linear-gradient(90deg, var(--wood), var(--wood-light) 20%, var(--wood) 50%, var(--wood-light) 80%, var(--wood));
+    min-height: 100vh;
+  }
+  /* score counters on the wooden rail */
+  .rail {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding: 4px 6px 18px;
+  }
+  .rail img { height: 44px; }
+  .beads { display: flex; align-items: center; gap: 4px; }
+  .beads span { width: 16px; height: 16px; border-radius: 50%; background: #3a2a1c; box-shadow: inset 0 2px 2px rgba(0,0,0,.5); }
+  .beads span.on { background: radial-gradient(circle at 35% 30%, #fff, #cfc7b2); box-shadow: 0 2px 0 rgba(0,0,0,.4); }
+  .beads em { font-style: normal; margin-left: 8px; font-weight: 700; }
+  .lang { font: 700 18px "Barlow Condensed", sans-serif; color: var(--chalk); background: var(--ink); border: 0; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+  .pitch {
+    position: relative;
+    background:
+      repeating-linear-gradient(0deg, var(--felt) 0 70px, var(--felt-dark) 70px 140px);
+    border: 6px solid var(--chalk);
+    outline: 14px solid #24170c;
+    padding: 0 0 30px;
+    overflow: hidden;
+  }
+  .pitch::before { /* halfway line and centre circle */
+    content: ""; position: absolute; left: 0; right: 0; top: 50%; border-top: 4px solid rgba(242,245,234,.85);
+  }
+  .pitch::after {
+    content: ""; position: absolute; left: 50%; top: 50%; width: 170px; height: 170px; margin: -85px 0 0 -85px;
+    border: 4px solid rgba(242,245,234,.85); border-radius: 50%;
+  }
+  .goal { position: relative; z-index: 1; width: 44%; height: 70px; margin: 0 auto; border: 4px solid rgba(242,245,234,.85); border-top: 0; }
+  .daily {
+    position: relative; z-index: 2;
+    margin: -50px auto 0; width: min(420px, 86%);
+    background: var(--chalk); color: var(--ink);
+    padding: 16px 18px; border-radius: 6px;
+    box-shadow: 0 10px 0 rgba(0,0,0,.25);
+    text-align: center;
+  }
+  .daily h1 { font: 26px/1.1 "Bowlby One", sans-serif; margin: 0 0 12px; }
+  .pair { display: flex; align-items: center; justify-content: center; gap: 12px; font-weight: 700; font-size: 22px; }
+  .pair img { width: 52px; height: 52px; border-radius: 50%; background: #e3e0d3; }
+  .pair .dots { letter-spacing: 3px; color: #8a7d6a; white-space: nowrap; }
+  .play { display: inline-block; margin-top: 14px; background: var(--red); color: #fff; font: 22px "Bowlby One", sans-serif; text-decoration: none; padding: 8px 22px; border-radius: 4px; box-shadow: 0 4px 0 #8c1316; }
+  .rods { position: relative; z-index: 2; list-style: none; margin: 34px 0 0; padding: 0; }
+  .rods li { position: relative; height: 158px; }
+  .rods li .rod, .rods li .men { top: 72%; }
+  .rods a { position: absolute; inset: 0; color: inherit; text-decoration: none; display: block; }
+  .rod { /* chrome bar crossing the table */
+    position: absolute; left: -30px; right: -30px; top: 50%; height: 12px; margin-top: -6px;
+    background: linear-gradient(#fff, var(--chrome) 40%, #8d9399);
+    box-shadow: 0 6px 6px rgba(0,0,0,.35);
+  }
+  .men { position: absolute; top: 50%; left: 0; right: 0; display: flex; justify-content: space-evenly; transform: translateY(-50%); transition: transform .35s cubic-bezier(.3,1.6,.5,1); }
+  .man { width: 30px; height: 54px; border-radius: 14px 14px 10px 10px; box-shadow: 0 8px 6px rgba(0,0,0,.35); position: relative; }
+  .man::before { content: ""; position: absolute; left: 6px; top: -14px; width: 18px; height: 18px; border-radius: 50%; background: inherit; filter: brightness(1.15); }
+  .red .man { background: var(--red); }
+  .blue .man { background: var(--blue); }
+  /* the whole rod slides together; odd rods slide right, even rods slide left */
+  .rods a:hover .men, .rods a:focus-visible .men { transform: translate(28px, -50%); }
+  .rods li:nth-child(even) a:hover .men, .rods li:nth-child(even) a:focus-visible .men { transform: translate(-28px, -50%); }
+  .rods a:focus-visible { outline: 4px dashed var(--chalk); outline-offset: -6px; }
+  .label {
+    position: absolute; left: 50%; top: 6px; transform: translateX(-50%);
+    background: var(--ink); color: var(--chalk); padding: 6px 16px 8px; border-radius: 6px; text-align: center; width: max-content; max-width: 78%;
+    z-index: 3;
+  }
+  .label b { display: block; font: 24px/1.1 "Bowlby One", sans-serif; }
+  .label small { font-size: 18px; color: #d9d2bf; }
+  .goal.bottom { border-top: 4px solid rgba(242,245,234,.85); border-bottom: 0; margin-top: 30px; }
+  .foot { text-align: center; margin: 18px 0 0; color: #e9d9c0; }
+  @media (prefers-reduced-motion: reduce) { .men { transition: none; } }
+  @media (max-width: 560px) {
+    .table { padding: 10px; }
+    .pitch { outline-width: 6px; }
+    .label b { font-size: 19px; }
+    .label small { font-size: 16px; }
+    .man { width: 22px; height: 42px; }
+    .man::before { left: 4px; width: 14px; height: 14px; top: -10px; }
+  }
+</style>
+</head>
+<body>
+<div class="table">
+  <div class="rail">
+    <img src="../../brand/logo.svg" alt="Clubhopper">
+    <div class="beads" aria-label="3 günlük seri">
+      <span class="on"></span><span class="on"></span><span class="on"></span><span></span><span></span><span></span><span></span>
+      <em>3 gün seri</em>
+    </div>
+    <button class="lang" type="button">EN</button>
+  </div>
+
+  <main class="pitch">
+    <div class="goal"></div>
+    <section class="daily">
+      <h1>Günün zinciri</h1>
+      <div class="pair">
+        <img src="../../site/img/players/154.webp" alt=""> Messi <span class="dots">· · ·</span> Muslera <img src="../../site/img/players/429.webp" alt="">
+      </div>
+      <a class="play" href="../chain.html">Oyna</a>
+    </section>
+
+    <ul class="rods" aria-label="Oyunlar">
+      <li class="red"><a href="../chain.html">
+        <span class="rod"></span><span class="men"><i class="man"></i><i class="man"></i></span>
+        <span class="label"><b>Zincir</b><small>Ortak takım arkadaşları üzerinden ulaş</small></span></a></li>
+      <li class="blue"><a href="../career.html">
+        <span class="rod"></span><span class="men"><i class="man"></i><i class="man"></i><i class="man"></i><i class="man"></i><i class="man"></i></span>
+        <span class="label"><b>Kariyer yolu</b><small>Kulüplerinden oyuncuyu bul</small></span></a></li>
+      <li class="red"><a href="../lineup.html">
+        <span class="rod"></span><span class="men"><i class="man"></i><i class="man"></i><i class="man"></i><i class="man"></i><i class="man"></i></span>
+        <span class="label"><b>Kadroyu tamamla</b><small>Bir maçın ilk 11'ini doldur</small></span></a></li>
+      <li class="blue"><a href="../quiz.html">
+        <span class="rod"></span><span class="men"><i class="man"></i><i class="man"></i><i class="man"></i></span>
+        <span class="label"><b>Maç quiz'i</b><small>İpuçlarından maçı bul</small></span></a></li>
+    </ul>
+    <div class="goal bottom"></div>
+  </main>
+  <p class="foot">Süper Lig ve büyük 5 lig, 2010'dan bugüne.</p>
+</div>
+</body>
+</html>

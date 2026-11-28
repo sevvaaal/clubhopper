@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clubhopper · Armalar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+  /* Direction D: each game is an embroidered patch, sewn onto a night-match backdrop. */
+  :root {
+    --night: #0d1a36;
+    --night-2: #1a2d57;
+    --grass: #1f5c2c;
+    --thread-white: #f3efe3;
+    --gold: #e4b23a;
+    --sky-blue: #4b8be0;
+    --red: #d63a3a;
+    --boot: #2e63c7;
+    --ink: #10172b;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    min-height: 100vh;
+    color: var(--thread-white);
+    font-family: "Baloo 2", sans-serif;
+    font-size: 19px; line-height: 1.35;
+    background:
+      radial-gradient(ellipse 30% 18% at 12% 0%, rgba(255,255,240,.55), transparent 70%),
+      radial-gradient(ellipse 30% 18% at 88% 0%, rgba(255,255,240,.55), transparent 70%),
+      linear-gradient(transparent 58%, rgba(0,0,0,.3) 58%, transparent 66%),
+      linear-gradient(var(--night), var(--night-2) 55%, var(--grass) 66%, #16471f);
+    background-attachment: fixed;
+  }
+  .wrap { max-width: 1000px; margin: 0 auto; padding: 22px 20px 50px; }
+  header { display: flex; justify-content: space-between; align-items: center; }
+  header img { height: 46px; }
+  .lang { font: 700 16px "Baloo 2", sans-serif; background: var(--thread-white); color: var(--ink); border: 0; border-radius: 999px; padding: 4px 14px; cursor: pointer; }
+
+  /* the stitched patch recipe: solid fill, raised edge, dashed running stitch just inside it */
+  .patch {
+    position: relative; display: grid; place-items: center; text-align: center;
+    color: var(--ink); text-decoration: none;
+    background-image: repeating-linear-gradient(115deg, rgba(255,255,255,.09) 0 2px, transparent 2px 5px);
+    box-shadow:
+      inset 0 0 0 6px var(--edge, var(--thread-white)),
+      0 3px 0 rgba(0,0,0,.25),
+      0 10px 18px rgba(0,0,0,.45);
+  }
+  .patch::after {
+    content: ""; position: absolute; inset: 10px; border: 2px dashed rgba(255,255,255,.55); border-radius: inherit; pointer-events: none;
+  }
+  .patch:focus-visible { outline: 4px solid var(--gold); outline-offset: 6px; }
+  .patch:hover { transform: rotate(var(--r, 0deg)) translateY(-4px); }
+
+  .hero { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 30px; margin: 40px 0 50px; }
+  .hero h1 { font-size: clamp(40px, 6.5vw, 72px); line-height: .95; margin: 0 0 12px; font-weight: 800; }
+  .hero p { margin: 0; max-width: 34ch; color: #cfd8ec; }
+  .shirt { /* the daily puzzle as a match shirt */
+    --edge: var(--sky-blue);
+    width: 300px; height: 300px;
+    background-color: var(--thread-white);
+    clip-path: polygon(30% 0, 70% 0, 100% 18%, 88% 38%, 80% 32%, 80% 100%, 20% 100%, 20% 32%, 12% 38%, 0 18%);
+    padding: 70px 70px 40px;
+    transform: rotate(-4deg);
+    box-shadow: inset 0 0 0 8px var(--sky-blue);
+  }
+  .shirt::after { display: none; }
+  .shirt small { font-weight: 700; color: #3a4a70; }
+  .shirt strong { display: block; font-size: 22px; line-height: 1.1; margin: 4px 0; }
+  .shirt .faces { display: flex; justify-content: center; gap: 6px; margin: 6px 0; }
+  .shirt img { width: 44px; height: 44px; border-radius: 50%; background: #dfe7f6; border: 3px solid var(--sky-blue); }
+  .shirt .go { display: inline-block; background: var(--red); color: #fff; border-radius: 999px; padding: 2px 16px; font-weight: 800; }
+
+  .sheet { display: grid; grid-template-columns: repeat(4, 1fr); gap: 34px 24px; align-items: center; }
+  .sheet li { list-style: none; }
+  .sheet ul, ul.sheet { padding: 0; margin: 0; }
+  .sheet .patch { aspect-ratio: 1; padding: 26px; transform: rotate(var(--r, 0deg)); transition: transform .2s; }
+  .sheet b { display: block; font-size: 24px; font-weight: 800; line-height: 1.05; }
+  .sheet span { display: block; font-size: 16px; font-weight: 500; margin-top: 4px; line-height: 1.2; }
+  .p-chain { --edge: var(--ink); --r: -3deg; background-color: var(--thread-white); border-radius: 50%; }
+  .p-career { --edge: var(--ink); --r: 4deg; background-color: var(--boot); color: #fff; border-radius: 44% 56% 30% 30% / 60% 60% 30% 30%; }
+  .p-lineup { --edge: var(--thread-white); --r: -2deg; background-color: #2f8f45; color: #fff; border-radius: 10px; }
+  .p-quiz { --edge: #7a5410; --r: 3deg; background-color: var(--gold); border-radius: 18px 18px 50% 50%; }
+  .p-chain .icon, .p-lineup .icon { margin-bottom: 4px; }
+  .icon { width: 54px; height: 54px; }
+  .foot { margin-top: 50px; text-align: center; color: #cfe3cf; font-weight: 500; }
+  @media (prefers-reduced-motion: reduce) { .sheet .patch { transition: none; } }
+  @media (max-width: 820px) {
+    .hero { grid-template-columns: 1fr; justify-items: center; text-align: center; }
+    .hero p { margin: 0 auto; }
+    .sheet { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 420px) {
+    .shirt { width: 260px; height: 260px; padding: 58px 58px 30px; }
+    .sheet .patch { padding: 16px; }
+    .sheet b { font-size: 19px; }
+    .sheet span { font-size: 14px; }
+    .icon { width: 38px; height: 38px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <img src="../../brand/logo.svg" alt="Clubhopper">
+    <button class="lang" type="button">EN</button>
+  </header>
+
+  <section class="hero">
+    <div>
+      <h1>Her gün yeni bir futbol bulmacası</h1>
+      <p>Süper Lig ve büyük 5 ligden 2010'dan bu yana oynanmış kadrolarla dört oyun.</p>
+    </div>
+    <a class="patch shirt" href="../chain.html">
+      <div>
+        <small>Günün zinciri</small>
+        <div class="faces"><img src="../../site/img/players/154.webp" alt=""><img src="../../site/img/players/429.webp" alt=""></div>
+        <strong>Messi'den Muslera'ya</strong>
+        <span class="go">Oyna</span>
+      </div>
+    </a>
+  </section>
+
+  <ul class="sheet" aria-label="Oyunlar">
+    <li><a class="patch p-chain" href="../chain.html"><div>
+      <svg class="icon" viewBox="0 0 60 60" aria-hidden="true"><g fill="none" stroke="#10172b" stroke-width="6"><rect x="4" y="18" width="30" height="22" rx="11"/><rect x="26" y="18" width="30" height="22" rx="11"/></g></svg>
+      <b>Zincir</b><span>Ortak takım arkadaşlarıyla ulaş</span></div></a></li>
+    <li><a class="patch p-career" href="../career.html"><div><b>Kariyer yolu</b><span>Kulüplerinden oyuncuyu bul</span></div></a></li>
+    <li><a class="patch p-lineup" href="../lineup.html"><div>
+      <svg class="icon" viewBox="0 0 60 60" aria-hidden="true"><g fill="none" stroke="#f3efe3" stroke-width="3"><rect x="6" y="4" width="48" height="52"/><path d="M6 30h48"/><circle cx="30" cy="30" r="8"/><rect x="18" y="4" width="24" height="9"/><rect x="18" y="47" width="24" height="9"/></g></svg>
+      <b>Kadroyu tamamla</b><span>Bir maçın ilk 11'ini doldur</span></div></a></li>
+    <li><a class="patch p-quiz" href="../quiz.html"><div><b>Maç quiz'i</b><span>İpuçlarından maçı bul</span></div></a></li>
+  </ul>
+  <p class="foot">Seri: 3 gün. Yarın yeni zincir gelir.</p>
+</div>
+</body>
+</html>

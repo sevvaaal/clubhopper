@@ -31,7 +31,7 @@ API-Football ──collect.py──▶ data/raw/       (ham yanıtlar, gitignore
                                ▼
                          site/public/img/    (64 px logo, 96 px foto, webp)
                                │
-                            site/ (statik)   ──▶ GitHub Pages / Cloudflare Pages
+                            site/ (statik)   ──▶ Render Static Site (render.yaml)
 ```
 
 Pipeline üç ayrı adımdan oluşur ve her biri tekrar çalıştırılabilir:
@@ -89,5 +89,5 @@ Her oyunun ayrıntılı planı `docs/games/` altında: [zincir](games/zincir.md)
 ## 5. Açık sorular
 
 1. **Kariyer yolu kaynağı**: API-Football `/transfers` mı, Wikidata mı, ikisi birden mi? (Wikidata'daki Türk kulüp QID'leri ayrıca düzeltilmeli.)
-2. **Alan adı ve yayın yeri**: GitHub Pages mi, Cloudflare Pages mi; özel alan adı olacak mı?
+2. **Alan adı**: Yayın yeri Render (statik site, 28 Kasım). Özel alan adı olacak mı?
 3. **Sezon açılış sırası**: Faz 1'de 2022–2024 birlikte mi açılsın, yoksa önce sadece 2024 mü?

@@ -102,4 +102,8 @@ Path("logo.svg").write_text(svg(LOGO, LOGO_BOX))
 Path("favicon.svg").write_text(
     svg(f'<rect x="-50" y="-59" width="612" height="612" rx="128" fill="#383c60"/>{LOGO}', "-50 -59 612 612")
 )
-print("wrote ball.svg, logo.svg and favicon.svg")
+# The site is published on its own, so it keeps its own copies.
+SITE = Path(__file__).resolve().parent.parent / "site"
+for name in ("logo.svg", "favicon.svg"):
+    (SITE / name).write_text(Path(name).read_text())
+print("wrote ball.svg, logo.svg and favicon.svg (logo and favicon also to site/)")

@@ -1,0 +1,18 @@
+# Render Blueprint: Clubhopper is a static site, published straight from site/.
+# No build step: the game data (site/data) and images (site/img) are committed,
+# made beforehand by the scripts in pipeline/ and brand/.
+services:
+  - type: web
+    name: clubhopper
+    runtime: static
+    buildCommand: echo "static site, nothing to build"
+    staticPublishPath: ./site
+    headers:
+      # Data only changes with a new deploy; an hour keeps it fresh enough.
+      - path: /data/*
+        name: Cache-Control
+        value: public, max-age=3600
+      # Crests, photos, flags and backgrounds hardly ever change.
+      - path: /img/*
+        name: Cache-Control
+        value: public, max-age=604800
