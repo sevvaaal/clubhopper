@@ -58,8 +58,8 @@ html {
       var(--sky);
   }
 }
-html::before, html::after {
-  content: ""; position: fixed; left: 0; right: 0; z-index: -1; pointer-events: none;
+html::before, html::after { /* below the moving stadium layer (.stadium, z-index -1) */
+  content: ""; position: fixed; left: 0; right: 0; z-index: -2; pointer-events: none;
 }
 html::before { /* the stand */
   top: 18vh; bottom: 13vh;
@@ -71,8 +71,7 @@ html::before { /* the stand */
 html::after { /* boards and grass */
   bottom: 0; height: 13vh;
   background:
-    linear-gradient(#0c0a1c 0 4px, transparent 4px),
-    repeating-linear-gradient(90deg, #8a6c40 0 140px, #46717d 140px 280px, #62793f 280px 420px, #7d5065 420px 560px) top / 100% 28px no-repeat,
+    linear-gradient(#0c0a1c 0 4px, #0c0a1c 4px 32px, transparent 32px),
     repeating-linear-gradient(90deg, #275734 0 70px, #255232 70px 140px);
 }
 body {
@@ -506,4 +505,31 @@ main .result-card .next button { background: var(--blue); color: #fff; }
   .nav-link { padding: 10px 12px; }
   .nav-dot { top: 50%; right: 12px; margin-top: -4px; }
   .lang-toggle { margin: 6px 0 0; align-self: flex-start; }
+}
+
+/* ---------- the living stadium (layout.js) ---------- */
+/* Slow and sparse on purpose: a wave every 15 s and the boards drifting.
+   Only transform and opacity move. */
+.stadium { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+.stadium .stand { position: absolute; left: 0; right: 0; top: calc(18vh + 8px); bottom: 13vh; overflow: hidden; }
+/* Mexican wave: columns of the same crowd standing up, lit one after another */
+.wave i {
+  position: absolute; top: 0; bottom: 0; width: 64px; left: calc(var(--i) * 64px);
+  background: url("img/bg/crowd-night-up.png") calc(var(--i) * -64px) 0 / 384px 192px;
+  image-rendering: pixelated; filter: saturate(.6) brightness(.85);
+  opacity: 0; animation: wave 15s linear calc(3s + var(--i) * .07s) infinite;
+}
+@keyframes wave { 0% { opacity: 0; } 0.8% { opacity: 1; } 3% { opacity: 1; } 4.5% { opacity: 0; } 100% { opacity: 0; } }
+/* pitch-side boards drifting slowly to the left */
+.boards { position: absolute; left: 0; right: 0; bottom: calc(13vh - 32px); height: 28px; overflow: hidden; }
+.boards .track { display: flex; width: max-content; animation: boards 64s linear infinite; } /* about 45px a second */
+.boards span {
+  flex: none; width: 180px; height: 28px; display: grid; place-items: center;
+  background: var(--c); color: var(--ink); font: 700 15px/1 "Pixelify Sans", var(--text);
+  box-shadow: inset -2px 0 #120f26; /* a thin seam between boards */
+}
+@keyframes boards { to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) {
+  .stadium * { animation: none !important; }
+  .wave i { opacity: 0; }
 }

@@ -37,7 +37,28 @@ const TEXT = {
 
 const here = () => (location.pathname.split("/").pop() || "index.html") + (new URLSearchParams(location.search).get("mode") === "free" ? "?mode=free" : "");
 
+// The living stadium behind the table: a Mexican wave through the crowd now and
+// then, and the pitch-side boards scrolling.
+// Pure decoration (aria-hidden); style.css animates it with transform/opacity
+// only and switches it off for reduced motion.
+function buildStadium() {
+  if (document.querySelector(".stadium")) return;
+  const cols = Math.ceil(Math.max(screen.width, innerWidth, 1600) / 64) + 1;
+  const wave = Array.from({ length: cols }, (_, i) => `<i style="--i:${i}"></i>`).join("");
+  // Different words on each board so the drift is easy to see.
+  // Night-stadium boards: dark panels in the stand's purples, dim LED-like text.
+  const board = [["#1d1a3c", "#b9a46a", "clubhopper"], ["#25204a", "#9d96c4", "günün zinciri"], ["#1d1a3c", "#b9a46a", "kulüpten kulübe"], ["#25204a", "#9d96c4", "oyuncudan oyuncuya"]]
+    .map(([bg, ink, word]) => `<span style="--c:${bg};--ink:${ink}">${word}</span>`).join("");
+  const el = document.createElement("div");
+  el.className = "stadium";
+  el.setAttribute("aria-hidden", "true");
+  el.innerHTML = `<div class="stand"><div class="wave">${wave}</div></div>
+    <div class="boards"><div class="track">${board.repeat(8)}</div></div>`;
+  document.body.prepend(el);
+}
+
 export function initLayout(onLang = () => {}) {
+  buildStadium();
   const top = document.getElementById("topbar");
   const bottom = document.getElementById("footer");
   let lang = getLang();

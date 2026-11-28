@@ -1,7 +1,9 @@
 """Pixel-art stadium crowd tiles for the site background.
 
-Writes site/img/bg/crowd-night.png, a small tile of fans in rows of seats, and
-floodlight.png, a floodlight tower. Both are drawn one pixel per "pixel" and scaled up in CSS with
+Writes site/img/bg/crowd-night.png, a small tile of fans in rows of seats;
+crowd-night-up.png, the same fans standing with their arms up on a transparent
+background (laid over the stand for the Mexican wave); and floodlight.png, a
+floodlight tower. Both are drawn one pixel per "pixel" and scaled up in CSS with
 image-rendering: pixelated. Standard library only.
 
     python make_crowd.py
@@ -27,12 +29,17 @@ THEMES = {
 }
 
 
-def tile(theme: dict, seed: int) -> list[list[tuple]]:
+def tile(theme: dict, seed: int) -> tuple[list[list[tuple]], list[list[tuple]]]:
+    """The seated crowd, and the same fans standing with arms up (transparent elsewhere)."""
     rnd = random.Random(seed)
     px = [[theme["stand"]] * W for _ in range(H)]
+    up = [[(0, 0, 0, 0)] * W for _ in range(H)]
 
     def put(x, y, c):
         px[y % H][x % W] = c
+
+    def stand(x, y, c):
+        up[y % H][x % W] = (*c, 255)
 
     for top in range(0, H, ROW):
         for x in range(W):
@@ -53,10 +60,20 @@ def tile(theme: dict, seed: int) -> list[list[tuple]]:
             for dx in range(3):                     # shirt
                 for dy in (3, 4, 5):
                     put(left + dx + shift - 1, top + dy, shirt)
+            # standing: one pixel higher, a taller shirt, both arms in the air
+            for dx in (1, 2):
+                for dy in (0, 1):
+                    stand(left + dx + shift - 1, top + dy, skin)
+            for dx in range(3):
+                for dy in (2, 3, 4, 5):
+                    stand(left + dx + shift - 1, top + dy, shirt)
+            for dy in (-1, 0):
+                stand(left + shift - 2, top + dy, skin)
+                stand(left + shift + 2, top + dy, skin)
             if rnd.random() < theme["raise"]:       # arms up
                 put(left + shift - 1, top, skin)
                 put(left + shift + 1, top, skin)
-    return px
+    return px, up
 
 
 CLEAR = (0, 0, 0, 0)
@@ -98,7 +115,9 @@ def png(pixels: list[list[tuple]]) -> bytes:
 
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
-    files = {f"crowd-{name}.png": tile(theme, seed=8) for name, theme in THEMES.items()}
+    files = {}
+    for name, theme in THEMES.items():
+        files[f"crowd-{name}.png"], files[f"crowd-{name}-up.png"] = tile(theme, seed=8)
     files["floodlight.png"] = floodlight()
     for name, pixels in files.items():
         path = OUT / name
