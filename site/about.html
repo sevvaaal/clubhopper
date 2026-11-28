@@ -11,17 +11,15 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="about">
-  <header>
-    <a class="brand" href="./"><img src="logo.svg" alt=""><span>clubhopper</span></a>
-    <div><button id="lang" type="button"></button></div>
-  </header>
+  <header class="topbar" id="topbar"></header>
 
   <main id="app"></main>
 
-  <footer><small><a href="./" id="home-link"></a></small></footer>
+  <footer class="site-footer" id="footer"></footer>
 
   <script type="module">
-    import { getLang, setLang, el } from "./common.js";
+    import { getLang, el } from "./common.js";
+    import { initLayout } from "./layout.js";
 
     const REPO = "https://github.com/sevvaaal/clubhopper/issues";
     const TEXT = {
@@ -80,11 +78,9 @@
       const t = TEXT[lang];
       document.documentElement.lang = lang;
       document.title = t.title;
-      el("lang").textContent = t.lang;
-      el("home-link").textContent = t.home;
       el("app").innerHTML = t.sections.map(([h, body]) => `<section class="card"><h2>${h}</h2>${body}</section>`).join("");
     };
-    el("lang").onclick = () => { lang = lang === "tr" ? "en" : "tr"; setLang(lang); render(); };
+    initLayout((next) => { lang = next; render(); });
     render();
   </script>
 </body>

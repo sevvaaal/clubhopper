@@ -11,19 +11,15 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <a class="brand" href="./"><img src="logo.svg" alt=""><span>clubhopper</span></a>
-    <div>
-      <button id="mode-daily"></button>
-      <button id="mode-free"></button>
-      <button id="lang"></button>
-    </div>
-  </header>
+  <header class="topbar" id="topbar"></header>
+
 
   <main id="app" aria-busy="true"><p class="loading" id="loading">Yükleniyor…</p></main>
   <script>try { if (localStorage.getItem("lang") === "en") loading.textContent = "Loading…"; } catch {}</script>
 
-  <footer><small><span id="about"></span> <a href="about.html" id="about-link"></a></small></footer>
+  <p class="page-note"><small id="about"></small></p>
+
+  <footer class="site-footer" id="footer"></footer>
 
   <script type="module" src="app.js"></script>
 </body>

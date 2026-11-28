@@ -1,4 +1,6 @@
 import { el, esc, getLang, setLang, loadGraph, loadJson, avatar, seasonLabel, dailySeed, rng } from "./common.js";
+import { initLayout } from "./layout.js";
+import { getDaily, recordDaily, resultCard, wireResultCard } from "./daily.js";
 import { quizPool, quizOptions, matchFeed, quizPoints } from "./matches.js";
 
 // The match is told as a live text commentary: the clock runs, each event is
@@ -154,10 +156,12 @@ function render() {
   el("mode-free").textContent = t.free;
   el("mode-daily").disabled = state.mode === "daily";
   el("mode-free").disabled = state.mode === "free";
-  el("lang").textContent = t.lang;
   el("about").textContent = t.rule;
-  el("about-link").textContent = state.lang === "tr" ? "Hakkında" : "About";
-  document.documentElement.lang = state.lang;
+  if (state.mode === "daily" && state.already) {
+    el("app").innerHTML = resultCard("quiz", state.lang, { already: true });
+    el("app").removeAttribute("aria-busy");
+    return wireResultCard(el("app"), "quiz", state.lang);
+  }
 
   const m = state.match;
   const upto = state.done ? state.feed.length : state.shown + (state.typing >= 0 ? 1 : 0);
@@ -178,8 +182,15 @@ function render() {
   if (state.done && state.won) html += `<p class="won">${t.won(points())}</p>`;
   else if (state.done) html += `<p>${t.lost} <b>${teamName(m.teams[0])} ${m.goals[0]}–${m.goals[1]} ${teamName(m.teams[1])}</b></p>`;
   if (state.done && state.mode === "free") html += `<p><button id="again">${t.again}</button></p>`;
+  const finishedDaily = state.done && state.mode === "daily";
+  if (finishedDaily) {
+    recordDaily("quiz", { won: state.won, points: state.won ? points() : 0, wrong: state.wrong.size });
+    layout.refresh();
+    html += resultCard("quiz", state.lang);
+  }
   el("app").innerHTML = html;
   el("app").removeAttribute("aria-busy");
+  if (finishedDaily) wireResultCard(el("app"), "quiz", state.lang);
   renderBoard();
   scrollFeed();
 }
@@ -245,8 +256,10 @@ function newPuzzle() {
   state.options = quizOptions(pool, state.match, random);
   state.feed = matchFeed(state.match);
   Object.assign(state, { shown: 0, typing: -1, clock: 0, score: [0, 0], finished: false, wrong: new Set(), done: false, won: false, paused: false });
+  state.already = state.mode === "daily" && !!getDaily("quiz");
+  run++; // stops any commentary still running from the previous match
   render();
-  stream(++run);
+  if (!state.already) stream(run);
 }
 
 el("app").addEventListener("click", (e) => {
@@ -267,14 +280,12 @@ el("app").addEventListener("click", (e) => {
     state.fast = !state.fast;
     b.textContent = state.fast ? T().slow : T().fast;
   } else if (b.id === "again") newPuzzle();
+  else if (b.id === "go-free") { state.mode = "free"; newPuzzle(); }
 });
 el("mode-daily").onclick = () => { state.mode = "daily"; newPuzzle(); };
 el("mode-free").onclick = () => { state.mode = "free"; newPuzzle(); };
-el("lang").onclick = () => {
-  state.lang = state.lang === "tr" ? "en" : "tr";
-  setLang(state.lang);
-  render(); // the line being typed is redrawn and keeps typing in the new language
-};
+// the line being typed is redrawn and keeps typing in the new language
+const layout = initLayout((lang) => { state.lang = lang; if (state.match) render(); });
 
 graph = await loadGraph();
 pool = quizPool((await loadJson("matches")).matches);

@@ -11,10 +11,7 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="home">
-  <header>
-    <a class="brand" href="./"><img src="logo.svg" alt=""><span>clubhopper</span></a>
-    <div><button id="lang" type="button"></button></div>
-  </header>
+  <header class="topbar" id="topbar"></header>
 
   <main>
     <div class="goalmouth"></div>
@@ -23,34 +20,37 @@
       <div class="pair" id="pair"></div>
       <a class="play" id="play" href="chain.html"></a>
     </section>
-    <ul class="rods" id="rods"></ul>
+    <h2 class="howto" id="how"></h2>
+    <ol class="rods" id="rods"></ol>
     <div class="goalmouth bottom"></div>
   </main>
 
-  <footer><small><span id="about"></span> <a href="about.html" id="about-link"></a></small></footer>
+  <footer class="site-footer" id="footer"></footer>
 
   <script type="module">
-    import { getLang, setLang, el, esc, loadGraph, avatar, rng } from "./common.js";
+    import { getLang, el, esc, loadGraph, avatar, rng, puzzleDate } from "./common.js";
+    import { initLayout } from "./layout.js";
+    import { getDaily } from "./daily.js";
     import { makePuzzle } from "./chain.js";
 
-    // [page, name, short description, team colour, men on the rod]
-    const GAMES = {
+    // How to play the chain, one step per rod: [title, text, team colour, men on the rod]
+    const STEPS = {
       tr: [
-        ["chain.html", "Zincir", "Ortak takım arkadaşları üzerinden ulaş", "red", 2],
-        ["career.html", "Kariyer yolu", "Kulüplerinden oyuncuyu bul", "blue", 5],
-        ["lineup.html", "Kadroyu tamamla", "Bir maçın ilk 11'ini doldur", "red", 5],
-        ["quiz.html", "Maç quiz'i", "İpuçlarından maçı bul", "blue", 3],
+        ["İki oyuncu", "Bir başlangıç ve bir hedef oyuncu verilir.", "red", 2],
+        ["Takım-sezon seç", "Elindeki oyuncunun oynadığı takımlardan ve sezonlardan birini seç.", "blue", 5],
+        ["Takım arkadaşına geç", "O kadrodan bir oyuncu seç. Zincir bir halka uzar.", "red", 5],
+        ["Hedefe ulaş", "Hedef oyuncuya en az adımla ulaş. Her gün yeni bir zincir gelir.", "blue", 3],
       ],
       en: [
-        ["chain.html", "Chain", "Link two players through shared teammates", "red", 2],
-        ["career.html", "Career path", "Name the player from their clubs", "blue", 5],
-        ["lineup.html", "Complete the lineup", "Fill in a match's starting XI", "red", 5],
-        ["quiz.html", "Match quiz", "Work out the match from the clues", "blue", 3],
+        ["Two players", "You get a start player and a target player.", "red", 2],
+        ["Pick a team-season", "Choose one of the teams and seasons your current player played in.", "blue", 5],
+        ["Jump to a teammate", "Pick a player from that squad. The chain grows by one link.", "red", 5],
+        ["Reach the target", "Get to the target in as few links as you can. A new chain every day.", "blue", 3],
       ],
     };
     const TEXT = {
-      tr: { lang: "EN", daily: "Günün zinciri", play: "Oyna", about: "Süper Lig, büyük 5 lig ve Avrupa kupalarından kadrolar." },
-      en: { lang: "TR", daily: "Daily chain", play: "Play", about: "Squads from the Süper Lig, Europe's big five leagues and the European cups." },
+      tr: { daily: "Günün zinciri", play: "Oyna", done: "Sonucunu gör", how: "Nasıl oynanır?" },
+      en: { daily: "Daily chain", play: "Play", done: "See your result", how: "How to play" },
     };
 
     let lang = getLang();
@@ -59,30 +59,28 @@
     const render = () => {
       const t = TEXT[lang];
       document.documentElement.lang = lang;
-      el("lang").textContent = t.lang;
       el("daily-title").textContent = t.daily;
-      el("play").textContent = t.play;
-      el("about").textContent = t.about;
-      el("about-link").textContent = lang === "tr" ? "Hakkında" : "About";
-      el("rods").innerHTML = GAMES[lang].map(([href, name, desc, team, men]) => `
-        <li class="${team}"><a href="${href}">
+      el("play").textContent = getDaily("chain") ? t.done : t.play;
+      el("how").textContent = t.how;
+      el("rods").innerHTML = STEPS[lang].map(([title, text, team, men], i) => `
+        <li class="${team}">
           <span class="rod"></span>
           <span class="men">${'<i class="man"></i>'.repeat(men)}</span>
-          <span class="label"><b>${esc(name)}</b><small>${esc(desc)}</small></span>
-        </a></li>`).join("");
+          <span class="label"><b>${i + 1}. ${esc(title)}</b><small>${esc(text)}</small></span>
+        </li>`).join("");
       if (puzzle) {
         const who = (pid) => `<span class="who">${esc(graph.data.players[pid].name)}</span>`;
         el("pair").innerHTML = `${avatar(graph.data, "players", puzzle.start, 52)} ${who(puzzle.start)}
           <span class="dots" aria-hidden="true">· · ·</span> ${who(puzzle.target)} ${avatar(graph.data, "players", puzzle.target, 52)}`;
       }
     };
-    el("lang").onclick = () => { lang = lang === "tr" ? "en" : "tr"; setLang(lang); render(); };
+    initLayout((next) => { lang = next; render(); });
     render();
 
     // Same seed as the chain page's daily mode, so the card shows today's real puzzle.
     // The data is large, so the menu shows first and the players fill in once it has loaded.
     graph = await loadGraph();
-    puzzle = makePuzzle(graph, rng(new Date().toISOString().slice(0, 10)));
+    puzzle = makePuzzle(graph, rng(puzzleDate()));
     render();
   </script>
 </body>

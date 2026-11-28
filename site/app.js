@@ -1,4 +1,7 @@
 import { buildGraph, teamSeasons, squad, makePuzzle, rng, pathLength } from "./chain.js";
+import { puzzleDate } from "./common.js";
+import { initLayout } from "./layout.js";
+import { getDaily, recordDaily, resultCard, wireResultCard } from "./daily.js";
 
 const TEXT = {
   tr: {
@@ -28,7 +31,9 @@ const TEXT = {
 // chain: [player, teamSeason, player, ...]; team: the team-season picked
 // from the current player, whose squad is being shown.
 const savedLang = (() => { try { return localStorage.getItem("lang"); } catch { return null; } })();
-const state = { lang: savedLang || "tr", mode: "daily", puzzle: null, chain: [], team: null, gaveUp: false };
+// chain.html?mode=free opens free play (the menu links there).
+const startMode = new URLSearchParams(location.search).get("mode") === "free" ? "free" : "daily";
+const state = { lang: savedLang || "tr", mode: startMode, puzzle: null, chain: [], team: null, gaveUp: false };
 let graph;
 
 const t = () => TEXT[state.lang];
@@ -61,7 +66,8 @@ const teamPic = (nodeId) => {
 const here = () => state.chain[state.chain.length - 1];
 
 function newPuzzle() {
-  const seed = state.mode === "daily" ? new Date().toISOString().slice(0, 10) : Math.random();
+  const seed = state.mode === "daily" ? puzzleDate() : Math.random();
+  state.already = state.mode === "daily" && !!getDaily("chain");
   state.puzzle = makePuzzle(graph, rng(seed));
   state.chain = [state.puzzle.start];
   state.team = null;
@@ -84,14 +90,12 @@ const buttons = (items, attr, label, pic) =>
 
 function render() {
   const T = t();
-  el("mode-daily").textContent = T.daily;
-  el("mode-free").textContent = T.free;
-  el("mode-daily").disabled = state.mode === "daily";
-  el("mode-free").disabled = state.mode === "free";
-  el("lang").textContent = T.lang;
   el("about").textContent = T.about;
-  el("about-link").textContent = state.lang === "tr" ? "Hakkında" : "About";
-  document.documentElement.lang = state.lang;
+  if (state.mode === "daily" && state.already) {
+    el("app").innerHTML = resultCard("chain", state.lang, { already: true });
+    el("app").removeAttribute("aria-busy");
+    return wireResultCard(el("app"), "chain", state.lang);
+  }
 
   const { start, target, solution } = state.puzzle;
   const best = pathLength(solution);
@@ -120,9 +124,16 @@ function render() {
   if (!done) html += `<button id="give-up">${T.giveUp}</button> `;
   if (done && state.mode === "free") html += `<button id="again">${T.again}</button>`;
   html += `</p>`;
+  const finishedDaily = done && state.mode === "daily";
+  if (finishedDaily) {
+    recordDaily("chain", { won, links: pathLength(state.chain), best });
+    layout.refresh();
+    html += resultCard("chain", state.lang);
+  }
 
   el("app").innerHTML = html;
   el("app").removeAttribute("aria-busy");
+  if (finishedDaily) wireResultCard(el("app"), "chain", state.lang);
 }
 
 el("app").addEventListener("click", (e) => {
@@ -138,15 +149,19 @@ el("app").addEventListener("click", (e) => {
     state.team = null;
   } else if (b.id === "give-up") state.gaveUp = true;
   else if (b.id === "again") return newPuzzle();
+  else if (b.id === "go-free") return setMode("free");
+  else if (b.dataset.share !== undefined) return;
   render();
 });
-el("mode-daily").onclick = () => { state.mode = "daily"; newPuzzle(); };
-el("mode-free").onclick = () => { state.mode = "free"; newPuzzle(); };
-el("lang").onclick = () => {
-  state.lang = state.lang === "tr" ? "en" : "tr";
-  try { localStorage.setItem("lang", state.lang); } catch {}
-  render();
-};
+// Switching mode also updates the address, so the menu marks the right item.
+function setMode(mode) {
+  state.mode = mode;
+  history.replaceState(null, "", mode === "free" ? "?mode=free" : location.pathname);
+  layout.refresh();
+  newPuzzle();
+}
+// Daily and free play are picked from the menu (chain.html, chain.html?mode=free).
+const layout = initLayout((lang) => { state.lang = lang; if (state.puzzle) render(); });
 
 graph = buildGraph(await (await fetch("data/game.json")).json());
 newPuzzle();

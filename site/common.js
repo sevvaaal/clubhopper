@@ -18,8 +18,10 @@ export function setLang(lang) {
 
 export const seasonLabel = (season) => `${season}/${String(season + 1).slice(2)}`;
 
-// Today's date for the daily puzzle, plus the game's name so the games differ.
-export const dailySeed = (game) => `${new Date().toISOString().slice(0, 10)}-${game}`;
+// YYYY-MM-DD of today's puzzle. The day turns over at midnight Turkish time (+03:00).
+export const puzzleDate = (now = Date.now()) => new Date(now + 3 * 3600e3).toISOString().slice(0, 10);
+// Seed for the daily puzzle, plus the game's name so the games differ.
+export const dailySeed = (game) => `${puzzleDate()}-${game}`;
 
 const cache = {};
 export async function loadJson(name) {

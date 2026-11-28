@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Clubhopper · Skorlar</title>
+  <link rel="icon" href="favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Barlow+Condensed:wght@500;600;700&family=Pixelify+Sans:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="scores">
+  <header class="topbar" id="topbar"></header>
+
+  <main id="app"></main>
+
+  <footer class="site-footer" id="footer"></footer>
+
+  <script type="module">
+    // Scores from the daily puzzles, read from this browser only (daily.js).
+    // Each game is a sewn name tape, as in the patch mockup the design came from.
+    import { getLang, el, esc } from "./common.js";
+    import { initLayout } from "./layout.js";
+    import { GAMES, stats, gameName, summaryText, formatDay, puzzleDate } from "./daily.js";
+
+    const PAGE = { chain: "chain.html", career: "career.html", lineup: "lineup.html", quiz: "quiz.html" };
+    const TEXT = {
+      tr: {
+        title: "Clubhopper · Skorlar", heading: "Skorların",
+        lead: "Günlük bulmacalardaki sonuçların. Sadece bu tarayıcıda saklanır, hesap yok, hiçbir yere gönderilmez.",
+        emptyTitle: "Henüz skor yok",
+        empty: "Bir günlük bulmacayı bitirdiğinde sonuçların, serilerin ve rekorların burada birikmeye başlar.",
+        start: "Günün zincirini oyna",
+        days: "gün oynadın", streak: "günlük seri", best: "en iyi seri",
+        played: "Oynandı", won: "Kazanıldı", rate: "Başarı", gStreak: "Seri", notYet: "Henüz oynamadın",
+        playGame: "Oyna",
+        last: "Son 14 gün", recent: "Son sonuçlar", date: "Tarih", game: "Oyun", result: "Sonuç",
+        dayPlayed: (d) => `${d}: oynandı`, dayEmpty: (d) => `${d}: oynanmadı`,
+      },
+      en: {
+        title: "Clubhopper · Scores", heading: "Your scores",
+        lead: "Your daily puzzle results. Stored only in this browser: no account, nothing is sent anywhere.",
+        emptyTitle: "No scores yet",
+        empty: "Finish a daily puzzle and your results, streaks and records will start piling up here.",
+        start: "Play today's chain",
+        days: "days played", streak: "day streak", best: "best streak",
+        played: "Played", won: "Won", rate: "Win rate", gStreak: "Streak", notYet: "Not played yet",
+        playGame: "Play",
+        last: "Last 14 days", recent: "Recent results", date: "Date", game: "Game", result: "Result",
+        dayPlayed: (d) => `${d}: played`, dayEmpty: (d) => `${d}: not played`,
+      },
+    };
+
+    const shift = (date, days) => {
+      const [y, m, d] = date.split("-").map(Number);
+      return new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);
+    };
+
+    let lang = getLang();
+    function render() {
+      const t = TEXT[lang];
+      document.title = t.title;
+      const all = stats();
+      if (!all.played) {
+        el("app").innerHTML = `<section class="card empty"><h1>${t.emptyTitle}</h1><p>${t.empty}</p>
+          <p><a class="play" href="chain.html">${t.start}</a></p></section>`;
+        return;
+      }
+      const today = puzzleDate();
+      const playedDays = new Set(all.recent.map((r) => r.date));
+      const strip = Array.from({ length: 14 }, (_, i) => shift(today, i - 13)).map((d) =>
+        `<i class="${playedDays.has(d) ? "on" : ""}${d === today ? " today" : ""}" title="${playedDays.has(d) ? t.dayPlayed(formatDay(d)) : t.dayEmpty(formatDay(d))}"></i>`).join("");
+
+      const tapes = GAMES.map((g) => {
+        const s = stats(g);
+        const body = s.played
+          ? `<dl><div><dt>${t.played}</dt><dd>${s.played}</dd></div><div><dt>${t.won}</dt><dd>${s.won}</dd></div><div><dt>${t.gStreak}</dt><dd>${s.currentStreak}</dd></div></dl>
+             <div class="bar" role="img" aria-label="${t.rate} %${s.winRate}"><i style="width:${s.winRate}%"></i></div>`
+          : `<p>${t.notYet}. <a href="${PAGE[g]}">${t.playGame}</a></p>`;
+        return `<article class="tape t-${g}"><h3><a href="${PAGE[g]}">${esc(gameName(g, lang))}</a></h3>${body}</article>`;
+      }).join("");
+
+      const rows = all.recent.slice(0, 12).map((r) => `<tr class="${r.won ? "is-won" : ""}">
+          <td>${formatDay(r.date)}</td><td>${esc(gameName(r.game, lang))}</td><td>${esc(summaryText(r, lang))}</td></tr>`).join("");
+
+      el("app").innerHTML = `
+        <section class="card intro"><h1>${t.heading}</h1><p>${t.lead}</p></section>
+        <section class="streak">
+          <div class="streak-nums">
+            <p><b>${all.currentStreak}</b> ${t.streak}</p>
+            <p><b>${all.bestStreak}</b> ${t.best}</p>
+            <p><b>${all.days}</b> ${t.days}</p>
+          </div>
+          <div class="streak-days" aria-label="${t.last}">${strip}</div>
+        </section>
+        <section class="tapes">${tapes}</section>
+        <section class="card">
+          <h2>${t.recent}</h2>
+          <div class="table-wrap"><table class="records">
+            <thead><tr><th>${t.date}</th><th>${t.game}</th><th>${t.result}</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table></div>
+        </section>`;
+    }
+    initLayout((next) => { lang = next; render(); });
+    render();
+  </script>
+</body>
+</html>

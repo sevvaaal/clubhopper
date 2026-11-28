@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Clubhopper · Mini oyunlar</title>
+  <link rel="icon" href="favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Barlow+Condensed:wght@500;600;700&family=Pixelify+Sans:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="home minis">
+  <header class="topbar" id="topbar"></header>
+
+  <main>
+    <div class="goalmouth"></div>
+    <section class="daily">
+      <h1 id="title"></h1>
+      <p id="lead"></p>
+    </section>
+    <ul class="rods" id="rods"></ul>
+    <div class="goalmouth bottom"></div>
+  </main>
+
+  <footer class="site-footer" id="footer"></footer>
+
+  <script type="module">
+    // The three side games, each on its own rod. Each has a daily puzzle too.
+    import { getLang, el, esc } from "./common.js";
+    import { initLayout } from "./layout.js";
+    import { getDaily } from "./daily.js";
+
+    // [page, game, name, how it works, team colour, men on the rod]
+    const GAMES = {
+      tr: [
+        ["career.html", "career", "Kariyer yolu", "Kulüpleri ve sezonları sırayla görürsün. 6 tahminde oyuncuyu bul.", "blue", 5],
+        ["lineup.html", "lineup", "Kadroyu tamamla", "Bir maçın skoru ve dizilişi verilir. İlk 11'i isim yazarak doldur.", "red", 5],
+        ["quiz.html", "quiz", "Maç quiz'i", "Maç canlı anlatımla akar. Hangi maç olduğunu ne kadar erken bilirsen o kadar puan.", "blue", 3],
+      ],
+      en: [
+        ["career.html", "career", "Career path", "See the clubs and seasons in order. Name the player in 6 guesses.", "blue", 5],
+        ["lineup.html", "lineup", "Complete the lineup", "You get a match's score and formation. Fill in the starting XI by name.", "red", 5],
+        ["quiz.html", "quiz", "Match quiz", "The match plays out as live commentary. Name it early for more points.", "blue", 3],
+      ],
+    };
+    const TEXT = {
+      tr: { title: "Mini oyunlar", lead: "Zincire ara verdiğinde. Her birinin de günlük bulmacası var.", done: "Bugün oynadın", page: "Clubhopper · Mini oyunlar" },
+      en: { title: "Mini games", lead: "For a break from the chain. Each has a daily puzzle too.", done: "Played today", page: "Clubhopper · Mini games" },
+    };
+
+    let lang = getLang();
+    const render = () => {
+      const t = TEXT[lang];
+      document.title = t.page;
+      el("title").textContent = t.title;
+      el("lead").textContent = t.lead;
+      el("rods").innerHTML = GAMES[lang].map(([href, game, name, text, team, men]) => `
+        <li class="${team}"><a href="${href}">
+          <span class="rod"></span>
+          <span class="men">${'<i class="man"></i>'.repeat(men)}</span>
+          <span class="label"><b>${esc(name)}</b><small>${esc(text)}</small>${getDaily(game) ? `<em>${t.done}</em>` : ""}</span>
+        </a></li>`).join("");
+    };
+    initLayout((next) => { lang = next; render(); });
+    render();
+  </script>
+</body>
+</html>

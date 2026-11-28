@@ -1,4 +1,6 @@
 import { el, esc, getLang, setLang, loadGraph, loadJson, avatar, flag, initials, dottedInitials, seasonLabel, dailySeed, rng, playerIndex, playerSearch } from "./common.js";
+import { initLayout } from "./layout.js";
+import { getDaily, recordDaily, resultCard, wireResultCard } from "./daily.js";
 import { career, careerPool, pickPlayer, MAX_GUESSES, HINTS } from "./career.js";
 
 const POS = {
@@ -45,6 +47,7 @@ function newPuzzle() {
   state.answer = pickPlayer(pool, random);
   state.guesses = [];
   state.done = false;
+  state.already = state.mode === "daily" && !!getDaily("career");
   render();
 }
 
@@ -75,10 +78,12 @@ function render() {
   el("mode-free").textContent = t.free;
   el("mode-daily").disabled = state.mode === "daily";
   el("mode-free").disabled = state.mode === "free";
-  el("lang").textContent = t.lang;
   el("about").textContent = t.note;
-  el("about-link").textContent = state.lang === "tr" ? "Hakkında" : "About";
-  document.documentElement.lang = state.lang;
+  if (state.mode === "daily" && state.already) {
+    el("app").innerHTML = resultCard("career", state.lang, { already: true });
+    el("app").removeAttribute("aria-busy");
+    return wireResultCard(el("app"), "career", state.lang);
+  }
 
   const won = state.guesses.includes(state.answer);
   const wrong = state.guesses.filter((g) => g !== state.answer);
@@ -96,8 +101,15 @@ function render() {
   else if (state.done) html += `<p>${t.lost} ${who}</p>`;
   else html += `<div id="search"></div><p><small>${t.left(MAX_GUESSES - state.guesses.length)}</small> <button id="give-up">${t.giveUp}</button></p>`;
   if (state.done && state.mode === "free") html += `<p><button id="again">${t.again}</button></p>`;
+  const finishedDaily = state.done && state.mode === "daily";
+  if (finishedDaily) {
+    recordDaily("career", { won, guesses: state.guesses.length });
+    layout.refresh();
+    html += resultCard("career", state.lang);
+  }
   el("app").innerHTML = html;
   el("app").removeAttribute("aria-busy");
+  if (finishedDaily) wireResultCard(el("app"), "career", state.lang);
 
   if (!state.done) playerSearch(el("search"), graph, index, guess, t.search);
 }
@@ -113,10 +125,11 @@ el("app").addEventListener("click", (e) => {
   const b = e.target.closest("button");
   if (b?.id === "give-up") { state.done = true; render(); }
   else if (b?.id === "again") newPuzzle();
+  else if (b?.id === "go-free") { state.mode = "free"; newPuzzle(); }
 });
 el("mode-daily").onclick = () => { state.mode = "daily"; newPuzzle(); };
 el("mode-free").onclick = () => { state.mode = "free"; newPuzzle(); };
-el("lang").onclick = () => { state.lang = state.lang === "tr" ? "en" : "tr"; setLang(state.lang); render(); };
+const layout = initLayout((lang) => { state.lang = lang; if (state.answer) render(); });
 
 graph = await loadGraph();
 positions = (await loadJson("matches")).positions;

@@ -1,4 +1,6 @@
 import { el, esc, getLang, setLang, loadGraph, loadJson, avatar, flag, initials, dottedInitials, seasonLabel, dailySeed, rng, playerIndex, playerSearch } from "./common.js";
+import { initLayout } from "./layout.js";
+import { getDaily, recordDaily, resultCard, wireResultCard } from "./daily.js";
 import { formationRows, pickLineup } from "./matches.js";
 
 const TEXT = {
@@ -39,6 +41,7 @@ const T = () => TEXT[state.lang];
 function newPuzzle() {
   const random = rng(state.mode === "daily" ? dailySeed("lineup") : Math.random());
   Object.assign(state, pickLineup(data.matches, random), { found: new Set(), hinted: new Set(), wrong: 0, msg: "", gaveUp: false });
+  state.already = state.mode === "daily" && !!getDaily("lineup");
   render();
 }
 
@@ -55,10 +58,12 @@ function render() {
   el("mode-free").textContent = t.free;
   el("mode-daily").disabled = state.mode === "daily";
   el("mode-free").disabled = state.mode === "free";
-  el("lang").textContent = t.lang;
   el("about").textContent = t.note;
-  el("about-link").textContent = state.lang === "tr" ? "Hakkında" : "About";
-  document.documentElement.lang = state.lang;
+  if (state.mode === "daily" && state.already) {
+    el("app").innerHTML = resultCard("lineup", state.lang, { already: true });
+    el("app").removeAttribute("aria-busy");
+    return wireResultCard(el("app"), "lineup", state.lang);
+  }
 
   const m = state.match;
   const xi = m.xi[state.side];
@@ -83,8 +88,15 @@ function render() {
     html += `<p class="msg">${state.msg}</p><div id="search"></div><p><small>${t.hintTip}</small></p><p><button id="give-up">${t.giveUp}</button></p>`;
   }
   if (done && state.mode === "free") html += `<p><button id="again">${t.again}</button></p>`;
+  const finishedDaily = done && state.mode === "daily";
+  if (finishedDaily) {
+    recordDaily("lineup", { won: state.found.size === 11, found: state.found.size, wrong: state.wrong, hints: state.hinted.size });
+    layout.refresh();
+    html += resultCard("lineup", state.lang);
+  }
   el("app").innerHTML = html;
   el("app").removeAttribute("aria-busy");
+  if (finishedDaily) wireResultCard(el("app"), "lineup", state.lang);
   if (!done) playerSearch(el("search"), graph, index, guess, t.search);
 }
 
@@ -103,12 +115,13 @@ el("app").addEventListener("click", (e) => {
   if (b.dataset.hint) state.hinted.add(Number(b.dataset.hint));
   else if (b.id === "give-up") state.gaveUp = true;
   else if (b.id === "again") return newPuzzle();
+  else if (b.id === "go-free") { state.mode = "free"; return newPuzzle(); }
   else return;
   render();
 });
 el("mode-daily").onclick = () => { state.mode = "daily"; newPuzzle(); };
 el("mode-free").onclick = () => { state.mode = "free"; newPuzzle(); };
-el("lang").onclick = () => { state.lang = state.lang === "tr" ? "en" : "tr"; setLang(state.lang); render(); };
+const layout = initLayout((lang) => { state.lang = lang; if (state.match) render(); });
 
 graph = await loadGraph();
 data = await loadJson("matches");
