@@ -2,8 +2,9 @@
 
 Writes site/img/bg/crowd-night.png, a small tile of fans in rows of seats;
 crowd-night-up.png, the same fans standing with their arms up on a transparent
-background (laid over the stand for the Mexican wave); and floodlight.png, a
-floodlight tower. Both are drawn one pixel per "pixel" and scaled up in CSS with
+background (laid over the stand for the Mexican wave); floodlight.png, a
+floodlight tower; and man-red.png / man-blue.png (plus -plain versions with no
+stripe, for shirt numbers), the foosball men seen from above. Both are drawn one pixel per "pixel" and scaled up in CSS with
 image-rendering: pixelated. Standard library only.
 
     python make_crowd.py
@@ -79,6 +80,46 @@ def tile(theme: dict, seed: int) -> tuple[list[list[tuple]], list[list[tuple]]]:
 CLEAR = (0, 0, 0, 0)
 
 
+# A foosball man seen from above: hair, face, shoulders (where the rod goes
+# through, rows 7-9), jersey with a light stripe, shorts, legs and boots.
+# o outline, h hair, s skin, j jersey, J jersey shade, w stripe, k shorts, b boots.
+MAN = [
+    "....oooooo....",
+    "...ohhhhhho...",
+    "..ohhhhhhhho..",
+    "..ohhhhhhhho..",
+    "..ohhssssho...",
+    "...ossssso....",
+    "..oojjjjjjoo..",
+    ".ojjjjjjjjjjo.",
+    "ojjjjjjjjjjjjo",
+    "ojjjjjjjjjjjjo",
+    "ojJjjjwwjjjJjo",
+    ".oJjjjwwjjjJo.",
+    "..ojjjwwjjjo..",
+    "..ojjjwwjjjo..",
+    "..oJjjjjjjJo..",
+    "..okkkkkkkko..",
+    "..okkkkkkkko..",
+    "..okkkookkko..",
+    "...osso.osso..",
+    "...osso.osso..",
+    "...osso.osso..",
+    "..obbbo.obbbo.",
+    "..obbbbobbbbo.",
+    "..oooooooooo..",
+]
+TEAMS = {"red": ((194, 71, 63), (150, 50, 44)), "blue": ((58, 97, 156), (40, 68, 112))}
+
+
+def foosball_man(team: str, stripe: bool = True) -> list[list[tuple]]:
+    """The man in a team's colours; without the stripe there is room for a shirt number."""
+    jersey, shade = TEAMS[team]
+    colours = {"o": (31, 22, 14), "h": (60, 40, 28), "s": (224, 172, 120), "j": jersey, "J": shade,
+               "w": (235, 231, 216) if stripe else jersey, "k": (31, 22, 14), "b": (20, 16, 12)}
+    return [[(*colours[c], 255) if c != "." else CLEAR for c in row] for row in MAN]
+
+
 def floodlight() -> list[list[tuple]]:
     """A 16x40 floodlight tower on a transparent background: a frame of lamps on a pole."""
     w, h = 16, 40
@@ -119,6 +160,9 @@ def main() -> None:
     for name, theme in THEMES.items():
         files[f"crowd-{name}.png"], files[f"crowd-{name}-up.png"] = tile(theme, seed=8)
     files["floodlight.png"] = floodlight()
+    for team in TEAMS:
+        files[f"man-{team}.png"] = foosball_man(team)
+        files[f"man-{team}-plain.png"] = foosball_man(team, stripe=False)
     for name, pixels in files.items():
         path = OUT / name
         path.write_bytes(png(pixels))
