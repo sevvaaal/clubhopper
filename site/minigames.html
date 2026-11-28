@@ -7,7 +7,7 @@
   <link rel="icon" href="favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Barlow+Condensed:wght@500;600;700&family=Pixelify+Sans:wght@700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Barlow+Condensed:wght@500;600;700&family=Pixelify+Sans:wght@700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="home minis">
@@ -19,6 +19,7 @@
       <h1 id="title"></h1>
       <p id="lead"></p>
     </section>
+    <h2 class="howto" id="pick"></h2>
     <ul class="rods" id="rods"></ul>
     <div class="goalmouth bottom"></div>
   </main>
@@ -45,8 +46,8 @@
       ],
     };
     const TEXT = {
-      tr: { title: "Mini oyunlar", lead: "Zincire ara verdiğinde. Her birinin de günlük bulmacası var.", done: "Bugün oynadın", page: "Clubhopper · Mini oyunlar" },
-      en: { title: "Mini games", lead: "For a break from the chain. Each has a daily puzzle too.", done: "Played today", page: "Clubhopper · Mini games" },
+      tr: { title: "Mini oyunlar", lead: "Zincire ara verdiğinde. Her birinin de günlük bulmacası var.", done: "Bugün oynadın", pick: "Bir oyun seç", page: "Clubhopper · Mini oyunlar" },
+      en: { title: "Mini games", lead: "For a break from the chain. Each has a daily puzzle too.", done: "Played today", pick: "Pick a game", page: "Clubhopper · Mini games" },
     };
 
     let lang = getLang();
@@ -55,7 +56,11 @@
       document.title = t.page;
       el("title").textContent = t.title;
       el("lead").textContent = t.lead;
-      el("rods").innerHTML = GAMES[lang].map(([href, game, name, text, team, men]) => `
+      el("pick").textContent = t.pick;
+      // Same table as the home page: four rods, red 2 / blue 5 / red 5 / blue 3.
+      // Three games, so the first rod has no label.
+      const plain = ([team, men]) => `<li class="${team} plain" aria-hidden="true"><span class="rod"></span><span class="men">${'<i class="man"></i>'.repeat(men)}</span></li>`;
+      el("rods").innerHTML = plain(["red", 2]) + GAMES[lang].map(([href, game, name, text, team, men]) => `
         <li class="${team}"><a href="${href}">
           <span class="rod"></span>
           <span class="men">${'<i class="man"></i>'.repeat(men)}</span>

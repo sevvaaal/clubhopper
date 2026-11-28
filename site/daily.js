@@ -85,7 +85,7 @@ const TEXT = {
     played: "oynandı", winRate: "kazanma", streak: "seri", best: "en iyi seri",
     next: "Sonraki bulmaca", ready: "Yeni bulmaca hazır, yenile",
     share: "Paylaş", copied: "Sonuç panoya kopyalandı", shareFail: "Paylaşılamadı, metni elle kopyalayabilirsin",
-    free: "Beklemek istemiyor musun? Serbest modda oyna", scores: "Tüm skorlar",
+    free: "Serbest modda oyna", wait: "Beklemek istemiyorsan", scores: "Tüm skorlar",
     summary: {
       chain: (r) => r.won ? `${r.links} adımda bağladın (en kısa ${r.best})` : `Pes ettin (en kısa ${r.best} adım)`,
       career: (r) => r.won ? `${r.guesses}. tahminde bildin` : "Oyuncuyu bulamadın",
@@ -100,7 +100,7 @@ const TEXT = {
     played: "played", winRate: "won", streak: "streak", best: "best streak",
     next: "Next puzzle in", ready: "New puzzle ready, refresh",
     share: "Share", copied: "Result copied to clipboard", shareFail: "Couldn't share, you can copy the text by hand",
-    free: "Don't want to wait? Play free mode", scores: "All scores",
+    free: "Play free mode", wait: "Don't want to wait", scores: "All scores",
     summary: {
       chain: (r) => r.won ? `Linked in ${r.links} (shortest ${r.best})` : `Gave up (shortest ${r.best})`,
       career: (r) => r.won ? `Got it on guess ${r.guesses}` : "Didn't find the player",
@@ -119,15 +119,24 @@ export function resultCard(game, lang, { already = false } = {}) {
   const r = getDaily(game);
   if (!r) return "";
   const s = stats(game);
-  const tile = (value, label) => `<div class="tile"><b>${value}</b><span>${label}</span></div>`;
-  return `<section class="result-card" aria-label="${esc(t.next)}">
-    <h2>${already ? t.already : r.won ? t.won : t.lost}</h2>
-    <p class="result-summary">${esc(gameName(game, lang))} ${formatDay(r.date)}: ${esc(summaryText(r, lang))}</p>
-    <div class="tiles">${tile(s.played, t.played)}${tile(lang === "tr" ? `%${s.winRate}` : `${s.winRate}%`, t.winRate)}${tile(s.currentStreak, t.streak)}${tile(s.bestStreak, t.best)}</div>
-    <p class="next"><span>${t.next}</span> <b data-countdown>${formatCountdown(secondsToNext())}</b></p>
-    <p class="result-actions"><button type="button" data-share>${t.share}</button> <button type="button" id="go-free">${t.free}</button></p>
+  const tile = (value, label) => `<div class="tile"><dd>${value}</dd><dt>${label}</dt></div>`;
+  const rate = lang === "tr" ? `%${s.winRate}` : `${s.winRate}%`;
+  // A small scoreboard: the result on a dark header, the four numbers, the
+  // countdown as an LED panel, then the two actions side by side.
+  return `<section class="result-card ${r.won ? "is-won" : "is-lost"}" aria-label="${esc(t.next)}">
+    <header class="result-head">
+      <p class="result-kicker">${esc(gameName(game, lang))} · ${formatDay(r.date)}</p>
+      <h2>${already ? t.already : r.won ? t.won : t.lost}</h2>
+      <p class="result-summary">${esc(summaryText(r, lang))}</p>
+    </header>
+    <dl class="tiles">${tile(s.played, t.played)}${tile(rate, t.winRate)}${tile(s.currentStreak, t.streak)}${tile(s.bestStreak, t.best)}</dl>
+    <div class="next"><span>${t.next}</span><b data-countdown>${formatCountdown(secondsToNext())}</b></div>
+    <div class="result-actions">
+      <button type="button" data-share>${t.share}</button>
+      <button type="button" id="go-free" title="${esc(t.wait)}">${t.free}</button>
+    </div>
     <p class="share-note" role="status" data-share-note></p>
-    <p class="result-more"><a href="scores.html">${t.scores}</a></p>
+    <a class="result-more" href="scores.html">${t.scores}</a>
   </section>`;
 }
 

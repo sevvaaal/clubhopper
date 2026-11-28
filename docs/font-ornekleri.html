@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clubhopper · font örnekleri</title>
+<!-- A tool page, not part of the site (it lives in docs/, Render only publishes site/).
+     Modelled on the portfolio's _araclar/font-ornekleri.html: Google Fonts in groups,
+     your own sample text, a size slider, a Turkish-letter check and copy buttons.
+     On top of that, any font can be tried as the logo, headings or body text in the
+     small Clubhopper preview at the top. -->
+<style>
+  :root {
+    --felt: #2f6d3b; --felt-dark: #2b6537; --chalk: #ebe7d8; --ink: #1f160e; --ink-soft: #5b5446;
+    --red: #c2473f; --blue: #3a619c; --gold: #e2bd5c; --night: #15122b; --night-2: #241e4a;
+    --logo: "Pixelify Sans"; --display: "Bagel Fat One"; --text: "Barlow Condensed";
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--night) linear-gradient(var(--night), var(--night-2)) fixed; }
+  body { max-width: 1180px; margin: 0 auto; padding: 0 16px 60px; color: var(--chalk); font: 16px/1.4 system-ui, sans-serif; }
+  a { color: inherit; }
+
+  /* sticky preview: a tiny Clubhopper using the three chosen fonts */
+  .preview {
+    position: sticky; top: 0; z-index: 5; margin: 0 -16px 20px; padding: 14px 16px 12px;
+    background: rgba(21,18,43,.96); border-bottom: 3px solid #0c0a1c; backdrop-filter: blur(6px);
+  }
+  .preview-inner { display: grid; grid-template-columns: 1fr 1.3fr; gap: 16px; align-items: center; }
+  .mini { background: repeating-linear-gradient(0deg, var(--felt) 0 40px, var(--felt-dark) 40px 80px); border: 4px solid var(--chalk); box-shadow: 0 0 0 8px #6f4220; border-radius: 2px; padding: 12px; margin: 8px; }
+  .mini-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .mini-bar img { height: 30px; }
+  .mini-bar span { font: 700 22px/1 var(--logo), sans-serif; }
+  .mini-card { background: var(--chalk); color: var(--ink); border-radius: 5px; padding: 8px 12px; margin-bottom: 8px; }
+  .mini-card h3 { margin: 0 0 2px; font: 400 22px/1.1 var(--display), sans-serif; }
+  .mini-card p { margin: 0; font: 500 17px/1.3 var(--text), sans-serif; }
+  .mini-label { display: inline-block; background: var(--ink); color: var(--chalk); border-radius: 5px; padding: 4px 12px 6px; text-align: center; }
+  .mini-label b { display: block; font: 400 19px/1.1 var(--display), sans-serif; }
+  .mini-label small { font: 500 15px/1.2 var(--text), sans-serif; color: #d9d2bf; }
+  .picked { display: grid; gap: 6px; font-size: 14px; }
+  .picked div { display: flex; gap: 8px; align-items: baseline; }
+  .picked dt { width: 56px; color: #a9a1c4; }
+  .picked dd { margin: 0; font-weight: 700; }
+  .ctrl { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 6px; }
+  .ctrl input[type=text] { flex: 1 1 220px; padding: 7px 10px; border: 2px dashed #6c66b0; border-radius: 6px; font-size: 15px; background: #1d1a3c; color: var(--chalk); }
+  .ctrl label { font-size: 13px; color: #a9a1c4; }
+  button { font: inherit; cursor: pointer; }
+  .btn { font-size: 13px; font-weight: 700; border: 0; border-radius: 6px; padding: 5px 10px; color: var(--ink); background: var(--chalk); }
+  .btn:hover { background: #fff; }
+  .btn.primary { background: var(--gold); }
+  .note { font-size: 13px; color: #a9a1c4; margin: 4px 0 0; }
+
+  header.intro h1 { font: 700 30px/1 "Pixelify Sans", sans-serif; margin: 6px 0; }
+  header.intro p { margin: 4px 0; color: #c9c2e0; }
+  nav.jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 0; }
+  nav.jump a { font-size: 13px; text-decoration: none; background: #2a2552; border: 1px solid #6c66b0; border-radius: 99px; padding: 3px 10px; }
+
+  section { margin-top: 30px; scroll-margin-top: 210px; }
+  section h2 { font: 700 22px/1 "Pixelify Sans", sans-serif; margin: 0; }
+  .gdesc { margin: 4px 0 12px; color: #a9a1c4; font-size: 14px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; }
+  .card { background: var(--chalk); color: var(--ink); border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; min-width: 0; box-shadow: 0 4px 0 rgba(0,0,0,.35); }
+  .card.is-picked { outline: 3px solid var(--gold); outline-offset: 2px; }
+  .name { font-size: 12px; color: var(--ink-soft); letter-spacing: .03em; }
+  .sample { font-size: var(--boyut, 30px); line-height: 1.2; overflow-wrap: anywhere; }
+  .abc { font-size: 16px; color: var(--ink-soft); overflow-wrap: anywhere; }
+  .roles { display: flex; flex-wrap: wrap; gap: 6px; }
+  .roles .btn { background: #dcd7c5; }
+  .roles .btn:hover { background: #cfc9b4; }
+  .roles .btn[data-role="logo"]:hover, .roles .btn[aria-pressed="true"][data-role="logo"] { background: var(--gold); }
+  .roles .btn[aria-pressed="true"] { background: var(--ink); color: var(--chalk); }
+  @media (max-width: 760px) {
+    .preview-inner { grid-template-columns: 1fr; }
+    .preview { position: static; }
+  }
+</style>
+</head>
+<body>
+  <div class="preview">
+    <div class="preview-inner">
+      <div class="mini" id="mini">
+        <div class="mini-bar"><img src="../site/logo.svg" alt=""><span>clubhopper</span></div>
+        <div class="mini-card"><h3>Günün zinciri</h3><p>Jorginho oyuncusundan João Moutinho oyuncusuna ulaş. En kısa zincir 3 adım.</p></div>
+        <div class="mini-label"><b>1. İki oyuncu</b><small>Bir başlangıç ve bir hedef oyuncu verilir.</small></div>
+      </div>
+      <div>
+        <dl class="picked">
+          <div><dt>Logo</dt><dd id="pick-logo"></dd></div>
+          <div><dt>Başlık</dt><dd id="pick-display"></dd></div>
+          <div><dt>Metin</dt><dd id="pick-text"></dd></div>
+        </dl>
+        <div class="ctrl">
+          <input type="text" id="yazi" placeholder="kendi yazını dene..." value="Günün zinciri">
+          <label>boyut <input type="range" id="boyut" min="16" max="64" value="30"></label>
+          <button class="btn primary" id="copy-all" type="button">Seçimi kopyala</button>
+          <button class="btn" id="reset" type="button">Şimdikine dön</button>
+        </div>
+        <p class="note">Bir kartta "Logo", "Başlık" ya da "Metin"e bas, önizleme o fontla değişir. Beğendiğin üçlüyü "Seçimi kopyala" ile kopyalayıp bana yapıştır, siteye uygulayayım.</p>
+      </div>
+    </div>
+  </div>
+
+  <header class="intro">
+    <h1>font örnekleri</h1>
+    <p>Hepsi Google Fonts'tan, ücretsiz. Kartın altındaki gri satır Türkçe harfleri gösteriyor: bir harf düz bir fontla görünüyorsa o font o harfi desteklemiyor demek.</p>
+    <nav class="jump" id="jump"></nav>
+  </header>
+
+  <main id="groups"></main>
+
+<script>
+  // [group title, short description, fonts]. A font is "Name" or ["Name", "weights"] for Google's css2 URL.
+  const GROUPS = [
+    ["Piksel", "Logo ve skor yazıları için. Eski oyunlar, 8-bit, piksel stadyumla aynı dil.",
+      ["Pixelify Sans", "Silkscreen", "Press Start 2P", "VT323", "Tiny5", "Jersey 10", "Jersey 20", "DotGothic16", "Handjet", "Micro 5", "Sixtyfour", "Workbench"]],
+    ["Forma ve tribün", "Kalın, sıkışık başlıklar. Forma numarası, pankart, kolej harfleri.",
+      ["Bowlby One", "Bungee", "Bungee Inline", "Rubik Mono One", "Anton", "Bebas Neue", "Archivo Black", "Alfa Slab One", "Black Ops One", "Graduate", "Russo One", "Staatliches", "Passion One", "Titan One", "Luckiest Guy", "Lilita One", "Racing Sans One", ["Big Shoulders Display", "wght@800"], ["Teko", "wght@600"]]],
+    ["Skor tabelası ve dijital", "LED tabela, saat, istatistik ekranı.",
+      ["Orbitron", "Audiowide", "Michroma", "Oxanium", "Chakra Petch", "Share Tech Mono", "Kode Mono", "Major Mono Display"]],
+    ["Eski maç programı", "Mexico 70 kapağı gibi: çizgili, şişkin, afiş harfleri.",
+      ["Monoton", "Righteous", "Bungee Shade", "Shrikhand", "Abril Fatface", "Rammetto One", "Bevan", "Ultra", "Holtwood One SC", "Spicy Rice"]],
+    ["Okunaklı metin", "Uzun açıklamalar, ipuçları, canlı anlatım. Dar ama yorucu olmayan.",
+      [["Barlow Condensed", "wght@500;700"], ["Barlow", "wght@500;700"], ["Archivo Narrow", "wght@500;700"], ["Roboto Condensed", "wght@500;700"], ["Oswald", "wght@400;600"], ["Saira Condensed", "wght@500;700"], ["Sofia Sans Condensed", "wght@500;700"], ["IBM Plex Sans Condensed", "wght@500;700"], ["Encode Sans Condensed", "wght@500;700"], ["Fira Sans Condensed", "wght@500;700"], "Pathway Gothic One", ["Asap Condensed", "wght@500;700"]]],
+    ["Pankart ve el yazısı", "Tribündeki elle boyanmış pankartlar, marker, fırça.",
+      ["Permanent Marker", "Rock Salt", "Caveat Brush", "Kalam", "Gochi Hand", "Sedgwick Ave Display", "Rubik Dirt", "Knewave", "Kaushan Script"]],
+    ["Çizgi roman ve eğlenceli", "Yuvarlak, sevimli, oyun gibi. Bulmaca hissini öne çıkarır.",
+      ["Bangers", ["Fredoka", "wght@500;700"], ["Baloo 2", "wght@700"], "Chewy", "Bubblegum Sans", "Sniglet", "Concert One", "Carter One", "Original Surfer"]],
+    ["Gazete ve serif", "Spor gazetesi manşeti, maç raporu, klasik ve ciddi.",
+      ["Playfair Display", "DM Serif Display", "Fraunces", "Roboto Slab", "Zilla Slab", "Bitter", "Libre Baskerville", "Old Standard TT", "Domine", "Merriweather"]],
+    ["Geniş ve modern", "Bugünün spor markaları gibi: geniş, düz, temiz.",
+      ["Space Grotesk", ["Syne", "wght@700"], "Unbounded", "Lexend", "Outfit", "Manrope", "Sora", "Krona One", "Dela Gothic One", "Rubik", "Syncopate"]],
+    ["Daktilo ve terminal", "Maç tutanağı, istatistik dökümü, eski teleks.",
+      ["Courier Prime", "Special Elite", "IBM Plex Mono", "Space Mono", "JetBrains Mono", "Cutive Mono", "Overpass Mono", "Xanh Mono", "Syne Mono"]],
+    ["Gotik ve kulüp arması", "Eski kulüp armaları ve formalardaki süslü harfler. Logo ya da tek bir başlık için.",
+      ["UnifrakturMaguntia", ["UnifrakturCook", "wght@700"], "Pirata One", "New Rocker", "Grenze Gotisch", "Jacquard 12", "Germania One", "MedievalSharp"]],
+    ["Renkli ve efektli", "Kendi rengi ya da dokusu olan fontlar. Sadece kısa vurgu yazıları için.",
+      ["Nabla", "Bungee Spice", "Honk", "Rubik Glitch", "Rubik Moonrocks", "Rubik Wet Paint", "Climate Crisis", "Tilt Prism"]],
+    // The groups below come from the portfolio's font page (portfolyo-site/_araclar/font-ornekleri.html).
+    ["Balon ve şeker", "Tombul, sevimli, sticker gibi.",
+      ["Rubik Bubbles", "Rubik Puddles", "Bagel Fat One", "Chicle", "Cherry Bomb One", "Darumadrop One", "Mochiy Pop One", "Sour Gummy", "Grandstander", "Emilys Candy", "Rampart One"]],
+    ["Tatlı el yazısı", "Defter kenarı, günlük, karalama.",
+      ["Gaegu", "Patrick Hand", "Indie Flower", "Gloria Hallelujah", "Comic Neue", "Mali", "Itim", "Coming Soon", "Schoolbell", "Short Stack", "Hachi Maru Pop", "Yomogi", "Love Ya Like A Sister", "Sue Ellen Francisco"]],
+    ["Retro ve fırça", "Eski afiş, tabela, mixtape kapağı.",
+      ["Pacifico", "Lobster", "Fascinate", "Cherry Cream Soda", "Rubik Doodle Shadow"]],
+  ];
+  const CURRENT = { logo: "Pixelify Sans", display: "Bagel Fat One", text: "Barlow Condensed" };
+  const picked = { ...CURRENT };
+
+  // One stylesheet link per font, so one unknown name can't break the rest.
+  const fontName = (f) => (Array.isArray(f) ? f[0] : f);
+  for (const [, , fonts] of GROUPS) for (const f of fonts) {
+    const [name, axes] = Array.isArray(f) ? f : [f, ""];
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = `https://fonts.googleapis.com/css2?family=${name.replace(/ /g, "+")}${axes ? ":" + axes : ""}&display=swap`;
+    document.head.append(link);
+  }
+  const extra = document.createElement("link");
+  extra.rel = "stylesheet";
+  extra.href = "https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@700&display=swap";
+  document.head.append(extra);
+
+  const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+  const ROLE = { logo: "Logo", display: "Başlık", text: "Metin" };
+  document.getElementById("jump").innerHTML = GROUPS.map(([title], i) => `<a href="#g${i}">${title}</a>`).join("");
+  document.getElementById("groups").innerHTML = GROUPS.map(([title, desc, fonts], i) => `
+    <section id="g${i}"><h2>${title}</h2><p class="gdesc">${desc}</p><div class="grid">
+      ${fonts.map(fontName).map((name) => `
+        <div class="card" data-font="${esc(name)}">
+          <div class="name">${esc(name)}</div>
+          <div class="sample" style="font-family:'${esc(name)}'"><span class="txt">Günün zinciri</span></div>
+          <div class="abc" style="font-family:'${esc(name)}'">ÇĞİÖŞÜ çğıöşü 0123 clubhopper</div>
+          <div class="roles">${Object.keys(ROLE).map((r) => `<button class="btn" type="button" data-role="${r}" aria-pressed="false">${ROLE[r]}</button>`).join("")}
+            <button class="btn" type="button" data-copy>kopyala</button></div>
+        </div>`).join("")}
+    </div></section>`).join("");
+
+  function apply() {
+    const root = document.documentElement.style;
+    for (const r of Object.keys(ROLE)) {
+      root.setProperty(`--${r}`, `"${picked[r]}"`);
+      document.getElementById(`pick-${r}`).textContent = picked[r] + (picked[r] === CURRENT[r] ? " (şimdiki)" : "");
+    }
+    document.querySelectorAll(".card").forEach((card) => {
+      let any = false;
+      card.querySelectorAll("[data-role]").forEach((b) => {
+        const on = picked[b.dataset.role] === card.dataset.font;
+        b.setAttribute("aria-pressed", on);
+        any ||= on;
+      });
+      card.classList.toggle("is-picked", any);
+    });
+  }
+
+  function copy(text, el, label) {
+    navigator.clipboard.writeText(text).then(() => {
+      el.textContent = "kopyalandı";
+      setTimeout(() => (el.textContent = label), 1200);
+    }).catch(() => {});
+  }
+
+  document.getElementById("groups").addEventListener("click", (e) => {
+    const card = e.target.closest(".card");
+    const b = e.target.closest("button");
+    if (!card || !b) return;
+    if (b.dataset.role) { picked[b.dataset.role] = card.dataset.font; apply(); }
+    else if (b.dataset.copy !== undefined) copy(`font-family: "${card.dataset.font}", sans-serif;`, b, "kopyala");
+  });
+  document.getElementById("copy-all").onclick = (e) =>
+    copy(`Logo: ${picked.logo}\nBaşlık: ${picked.display}\nMetin: ${picked.text}`, e.target, "Seçimi kopyala");
+  document.getElementById("reset").onclick = () => { Object.assign(picked, CURRENT); apply(); };
+
+  const yazi = document.getElementById("yazi"), boyut = document.getElementById("boyut");
+  yazi.addEventListener("input", () => document.querySelectorAll(".txt").forEach((t) => (t.textContent = yazi.value || "Günün zinciri")));
+  boyut.addEventListener("input", () => document.documentElement.style.setProperty("--boyut", boyut.value + "px"));
+  apply();
+</script>
+</body>
+</html>
