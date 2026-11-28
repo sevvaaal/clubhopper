@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Clubhopper</title>
+  <link rel="icon" href="../brand/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Barlow+Condensed:wght@500;600;700&family=Pixelify+Sans:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <a class="brand" href="./"><img src="../brand/logo.svg" alt=""><span>clubhopper</span></a>
+    <div>
+      <button id="mode-daily"></button>
+      <button id="mode-free"></button>
+      <button id="lang"></button>
+    </div>
+  </header>
+
+  <main id="app" aria-busy="true"><p class="loading" id="loading">Yükleniyor…</p></main>
+  <script>try { if (localStorage.getItem("lang") === "en") loading.textContent = "Loading…"; } catch {}</script>
+
+  <footer><small><span id="about"></span> <a href="about.html" id="about-link"></a></small></footer>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

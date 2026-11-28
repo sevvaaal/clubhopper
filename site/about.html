@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Clubhopper · Hakkında</title>
+  <link rel="icon" href="../brand/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Barlow+Condensed:wght@500;600;700&family=Pixelify+Sans:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="about">
+  <header>
+    <a class="brand" href="./"><img src="../brand/logo.svg" alt=""><span>clubhopper</span></a>
+    <div><button id="lang" type="button"></button></div>
+  </header>
+
+  <main id="app"></main>
+
+  <footer><small><a href="./" id="home-link"></a></small></footer>
+
+  <script type="module">
+    import { getLang, setLang, el } from "./common.js";
+
+    const REPO = "https://github.com/sevvaaal/clubhopper/issues";
+    const TEXT = {
+      tr: {
+        title: "Clubhopper · Hakkında", lang: "EN", home: "Ana sayfaya dön",
+        sections: [
+          ["Clubhopper nedir?", `<p>Kulüp futboluna dair günlük bulmacalar. Her gün herkes aynı bulmacayı çözer, istersen serbest modda sınırsız oynarsın. Hesap yok; dil tercihin yalnızca bu tarayıcıda saklanır.</p>`],
+          ["Oyunlar", `<ul>
+            <li><a href="chain.html"><b>Zincir</b></a>: iki oyuncuyu ortak takım arkadaşları üzerinden birbirine bağla.</li>
+            <li><a href="career.html"><b>Kariyer yolu</b></a>: oynadığı kulüplere bakıp oyuncuyu bul.</li>
+            <li><a href="lineup.html"><b>Kadroyu tamamla</b></a>: bir maçın ilk 11'ini eksiksiz doldur.</li>
+            <li><a href="quiz.html"><b>Maç quiz'i</b></a>: canlı anlatımı izle, hangi maç olduğunu bul.</li>
+          </ul>`],
+          ["Veri", `<p>Maç ve kadro verisi <a href="https://www.api-football.com" rel="noopener">API-Football</a>'dan alınır.</p>
+            <ul>
+              <li>Büyük 5 lig: 2010/11 – 2025/26</li>
+              <li>Süper Lig ve Şampiyonlar Ligi: 2011/12 – 2025/26</li>
+              <li>Avrupa Ligi: 2014/15 – 2025/26</li>
+            </ul>
+            <p>Bir oyuncu, ligde ya da Avrupa kupalarında en az 1 dakika oynadığı takım-sezona sayılır. Şampiyonlar Ligi ve Avrupa Ligi maçları, kulübün o sezonuna eklenir.</p>`],
+          ["Görseller", `<p>Kulüp logoları ve oyuncu fotoğrafları sahiplerine aittir. Yalnızca tanımak için, küçük boyutta gösterilir. Kaldırılmasını istediğin bir görsel varsa <a href="${REPO}" rel="noopener">GitHub'da bize yaz</a>.</p>`],
+          ["Teşekkürler", `<ul>
+            <li>Bayraklar: <a href="https://kenney.nl/assets/flag-pack" rel="noopener">Kenney Flag Pack</a> (CC0)</li>
+            <li>Yazı tipleri: Bowlby One, Barlow Condensed ve Pixelify Sans (Google Fonts)</li>
+          </ul>`],
+        ],
+      },
+      en: {
+        title: "Clubhopper · About", lang: "TR", home: "Back to the home page",
+        sections: [
+          ["What is Clubhopper?", `<p>Daily puzzles about club football. Everyone gets the same puzzle each day, and free play lets you keep going. There are no accounts; your language choice is only stored in this browser.</p>`],
+          ["Games", `<ul>
+            <li><a href="chain.html"><b>Chain</b></a>: link two players through shared teammates.</li>
+            <li><a href="career.html"><b>Career path</b></a>: name the player from the clubs they played for.</li>
+            <li><a href="lineup.html"><b>Complete the lineup</b></a>: fill in a match's starting XI.</li>
+            <li><a href="quiz.html"><b>Match quiz</b></a>: follow the live commentary and work out the match.</li>
+          </ul>`],
+          ["Data", `<p>Match and squad data comes from <a href="https://www.api-football.com" rel="noopener">API-Football</a>.</p>
+            <ul>
+              <li>Europe's big five leagues: 2010/11 – 2025/26</li>
+              <li>Süper Lig and Champions League: 2011/12 – 2025/26</li>
+              <li>Europa League: 2014/15 – 2025/26</li>
+            </ul>
+            <p>A player counts for a team-season if they played at least 1 minute for that club in the league or a European cup. Champions League and Europa League games count towards the club's season.</p>`],
+          ["Images", `<p>Club crests and player photos belong to their owners and are shown small, for identification only. To have an image removed, <a href="${REPO}" rel="noopener">write to us on GitHub</a>.</p>`],
+          ["Thanks", `<ul>
+            <li>Flags: <a href="https://kenney.nl/assets/flag-pack" rel="noopener">Kenney Flag Pack</a> (CC0)</li>
+            <li>Fonts: Bowlby One, Barlow Condensed and Pixelify Sans (Google Fonts)</li>
+          </ul>`],
+        ],
+      },
+    };
+
+    let lang = getLang();
+    const render = () => {
+      const t = TEXT[lang];
+      document.documentElement.lang = lang;
+      document.title = t.title;
+      el("lang").textContent = t.lang;
+      el("home-link").textContent = t.home;
+      el("app").innerHTML = t.sections.map(([h, body]) => `<section class="card"><h2>${h}</h2>${body}</section>`).join("");
+    };
+    el("lang").onclick = () => { lang = lang === "tr" ? "en" : "tr"; setLang(lang); render(); };
+    render();
+  </script>
+</body>
+</html>

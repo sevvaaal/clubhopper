@@ -5,43 +5,85 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Clubhopper</title>
   <link rel="icon" href="../brand/favicon.svg">
-  <!-- Prototype: plain layout only, the real design comes later. -->
-  <style>
-    body { font-family: system-ui, sans-serif; max-width: 640px; margin: 0 auto; padding: 16px; line-height: 1.4; }
-    header { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
-    button { font: inherit; cursor: pointer; }
-    .goal { border: 1px solid #999; padding: 8px 12px; margin: 12px 0; }
-    .chain { list-style: none; padding: 0; }
-    .chain li { padding: 4px 0; }
-    .chain .via { color: #666; padding-left: 16px; }
-    .current { font-weight: bold; }
-    .choices { display: flex; flex-wrap: wrap; gap: 6px; }
-    .msg { min-height: 1.4em; color: #b00; }
-    .won { color: #070; font-weight: bold; }
-    small { color: #666; }
-    .pic { width: 32px; height: 32px; vertical-align: middle; flex: none; }
-    .pic.players { border-radius: 50%; object-fit: cover; }
-    .pic.teams { object-fit: contain; }
-    .initials { display: inline-flex; align-items: center; justify-content: center; border-radius: 50%;
-      font-size: 12px; font-weight: bold; color: #fff; background: hsl(var(--hue) 45% 42%); }
-    .initials.teams { border-radius: 6px; }
-    .choices button { display: inline-flex; align-items: center; gap: 6px; }
-  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Barlow+Condensed:wght@500;600;700&family=Pixelify+Sans:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="home">
   <header>
-    <img src="../brand/logo.svg" alt="Clubhopper" height="40">
-    <div>
-      <button id="mode-daily"></button>
-      <button id="mode-free"></button>
-      <button id="lang"></button>
-    </div>
+    <a class="brand" href="./"><img src="../brand/logo.svg" alt=""><span>clubhopper</span></a>
+    <div><button id="lang" type="button"></button></div>
   </header>
 
-  <main id="app"><p>…</p></main>
+  <main>
+    <div class="goalmouth"></div>
+    <section class="daily">
+      <h1 id="daily-title"></h1>
+      <div class="pair" id="pair"></div>
+      <a class="play" id="play" href="chain.html"></a>
+    </section>
+    <ul class="rods" id="rods"></ul>
+    <div class="goalmouth bottom"></div>
+  </main>
 
-  <footer><small id="about"></small></footer>
+  <footer><small><span id="about"></span> <a href="about.html" id="about-link"></a></small></footer>
 
-  <script type="module" src="app.js"></script>
+  <script type="module">
+    import { getLang, setLang, el, esc, loadGraph, avatar, rng } from "./common.js";
+    import { makePuzzle } from "./chain.js";
+
+    // [page, name, short description, team colour, men on the rod]
+    const GAMES = {
+      tr: [
+        ["chain.html", "Zincir", "Ortak takım arkadaşları üzerinden ulaş", "red", 2],
+        ["career.html", "Kariyer yolu", "Kulüplerinden oyuncuyu bul", "blue", 5],
+        ["lineup.html", "Kadroyu tamamla", "Bir maçın ilk 11'ini doldur", "red", 5],
+        ["quiz.html", "Maç quiz'i", "İpuçlarından maçı bul", "blue", 3],
+      ],
+      en: [
+        ["chain.html", "Chain", "Link two players through shared teammates", "red", 2],
+        ["career.html", "Career path", "Name the player from their clubs", "blue", 5],
+        ["lineup.html", "Complete the lineup", "Fill in a match's starting XI", "red", 5],
+        ["quiz.html", "Match quiz", "Work out the match from the clues", "blue", 3],
+      ],
+    };
+    const TEXT = {
+      tr: { lang: "EN", daily: "Günün zinciri", play: "Oyna", about: "Süper Lig, büyük 5 lig ve Avrupa kupalarından kadrolar." },
+      en: { lang: "TR", daily: "Daily chain", play: "Play", about: "Squads from the Süper Lig, Europe's big five leagues and the European cups." },
+    };
+
+    let lang = getLang();
+    let puzzle = null, graph = null;
+
+    const render = () => {
+      const t = TEXT[lang];
+      document.documentElement.lang = lang;
+      el("lang").textContent = t.lang;
+      el("daily-title").textContent = t.daily;
+      el("play").textContent = t.play;
+      el("about").textContent = t.about;
+      el("about-link").textContent = lang === "tr" ? "Hakkında" : "About";
+      el("rods").innerHTML = GAMES[lang].map(([href, name, desc, team, men]) => `
+        <li class="${team}"><a href="${href}">
+          <span class="rod"></span>
+          <span class="men">${'<i class="man"></i>'.repeat(men)}</span>
+          <span class="label"><b>${esc(name)}</b><small>${esc(desc)}</small></span>
+        </a></li>`).join("");
+      if (puzzle) {
+        const who = (pid) => `<span class="who">${esc(graph.data.players[pid].name)}</span>`;
+        el("pair").innerHTML = `${avatar(graph.data, "players", puzzle.start, 52)} ${who(puzzle.start)}
+          <span class="dots" aria-hidden="true">· · ·</span> ${who(puzzle.target)} ${avatar(graph.data, "players", puzzle.target, 52)}`;
+      }
+    };
+    el("lang").onclick = () => { lang = lang === "tr" ? "en" : "tr"; setLang(lang); render(); };
+    render();
+
+    // Same seed as the chain page's daily mode, so the card shows today's real puzzle.
+    // The data is large, so the menu shows first and the players fill in once it has loaded.
+    graph = await loadGraph();
+    puzzle = makePuzzle(graph, rng(new Date().toISOString().slice(0, 10)));
+    render();
+  </script>
 </body>
 </html>

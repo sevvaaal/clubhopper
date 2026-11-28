@@ -1,6 +1,6 @@
 # Clubhopper — Proje Planı
 
-Son güncelleme: 19 Kasım 2026. Bu belge kararları ve yol haritasını tek yerde tutar; karar değiştikçe güncellenir.
+Son güncelleme: 27 Kasım 2026. Bu belge kararları ve yol haritasını tek yerde tutar; karar değiştikçe güncellenir.
 
 ## 1. Kararlar (netleşti)
 
@@ -80,10 +80,11 @@ Not: Ücretsiz planda takım başına en fazla 3 sayfa (60 oyuncu) alınabiliyor
 - [x] Tam çekim bitti (27 Kasım): 122 turnuva-sezon, ~41.500 maç, 700 kulübün transferleri; ~10.400 istek, 1,5 GB ham veri. Şampiyonlar Ligi ve Avrupa Ligi kulübün sezonuna eklendi.
 - [ ] Ham veri yedeği: Pro bitince veri bizde kalır
 
-### Faz 3 — Diğer oyunlar
-1. **Kariyer yolu**: kadro verisi + `/transfers` yeterli olabilir; Wikidata yalnızca eksikleri tamamlamak için
-2. **Kadroyu tamamla**: maç detaylarındaki ilk 11'ler
-3. **Maç quiz'i**: maç olayları (gol, kart, değişiklik)
+### Faz 3 — Diğer oyunlar (prototipler hazır, 27 Kasım)
+Her oyunun ayrıntılı planı `docs/games/` altında: [zincir](games/zincir.md), [kariyer](games/kariyer.md), [kadro](games/kadro.md), [quiz](games/quiz.md). Site ana sayfası oyun menüsü oldu; maç verisi `pipeline/build_matches.py` ile üretiliyor.
+1. **Kariyer yolu**: takım-sezonlardan kariyer; eksik kısımlar ileride `/transfers` ile tamamlanabilir
+2. **Kadroyu tamamla**: önemli maçların ilk 11'leri ve saha dizilişi
+3. **Maç quiz'i**: ipuçlarından maçı bulma (gol dakikaları, golcüler, tur, stat)
 
 ## 5. Açık sorular
 

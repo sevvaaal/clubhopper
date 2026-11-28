@@ -10,7 +10,7 @@ const TEXT = {
     back: "← Takımlara dön", undo: "Geri al", giveUp: "Pes et", again: "Yeni bulmaca",
     won: (n, best) => `Tebrikler! ${n} adımda ulaştın (en kısa: ${best}).`,
     solution: "En kısa zincir:",
-    about: (seasons) => `Prototip. Veri: API-Football. Şu an açık: ${seasons}. Bir oyuncu, ligde ya da Avrupa kupalarında en az 1 dakika oynadığı takım-sezona sayılır. Kulüp logoları ve oyuncu fotoğrafları sahiplerine aittir; yalnızca tanıtım amaçlı, küçük boyutta gösterilir. Kaldırılmasını istediğiniz bir görsel olursa bize yazın.`,
+    about: "Bir oyuncu, ligde ya da Avrupa kupalarında en az 1 dakika oynadığı takım-sezona sayılır.",
   },
   en: {
     daily: "Daily chain", free: "Free play", lang: "TR",
@@ -21,13 +21,14 @@ const TEXT = {
     back: "← Back to teams", undo: "Undo", giveUp: "Give up", again: "New puzzle",
     won: (n, best) => `Well done! You made it in ${n} links (shortest: ${best}).`,
     solution: "Shortest chain:",
-    about: (seasons) => `Prototype. Data: API-Football. Open now: ${seasons}. A player counts for a team-season if they played at least 1 minute for that club in the league or a European cup. Club crests and player photos belong to their owners and are shown small, for identification only. Contact us to have any image removed.`,
+    about: "A player counts for a team-season if they played at least 1 minute for that club in the league or a European cup.",
   },
 };
 
 // chain: [player, teamSeason, player, ...]; team: the team-season picked
 // from the current player, whose squad is being shown.
-const state = { lang: "tr", mode: "daily", puzzle: null, chain: [], team: null, gaveUp: false };
+const savedLang = (() => { try { return localStorage.getItem("lang"); } catch { return null; } })();
+const state = { lang: savedLang || "tr", mode: "daily", puzzle: null, chain: [], team: null, gaveUp: false };
 let graph;
 
 const t = () => TEXT[state.lang];
@@ -57,21 +58,6 @@ const teamPic = (nodeId) => {
   const team = graph.nodes.get(nodeId).team;
   return avatar("teams", team, graph.data.teams[team].name);
 };
-// "Süper Lig 2022/23–2024/25, Premier League 2023/24 (partial)–2024/25", from the data.
-function openSeasons() {
-  const partial = state.lang === "tr" ? "eksik" : "partial";
-  const byLeague = new Map();
-  for (const s of graph.data.seasons) {
-    if (!byLeague.has(s.league)) byLeague.set(s.league, []);
-    byLeague.get(s.league).push(s);
-  }
-  return [...byLeague].map(([league, list]) => {
-    const label = (s) => `${s.season}/${String(s.season + 1).slice(2)}${s.teams < s.of ? ` (${partial})` : ""}`;
-    list.sort((a, b) => a.season - b.season);
-    const range = list.length > 1 ? `${label(list[0])}–${label(list[list.length - 1])}` : label(list[0]);
-    return `${graph.data.leagues[league]} ${range}`;
-  }).join(", ");
-}
 const here = () => state.chain[state.chain.length - 1];
 
 function newPuzzle() {
@@ -103,7 +89,8 @@ function render() {
   el("mode-daily").disabled = state.mode === "daily";
   el("mode-free").disabled = state.mode === "free";
   el("lang").textContent = T.lang;
-  el("about").textContent = T.about(openSeasons());
+  el("about").textContent = T.about;
+  el("about-link").textContent = state.lang === "tr" ? "Hakkında" : "About";
   document.documentElement.lang = state.lang;
 
   const { start, target, solution } = state.puzzle;
@@ -135,6 +122,7 @@ function render() {
   html += `</p>`;
 
   el("app").innerHTML = html;
+  el("app").removeAttribute("aria-busy");
 }
 
 el("app").addEventListener("click", (e) => {
@@ -154,7 +142,11 @@ el("app").addEventListener("click", (e) => {
 });
 el("mode-daily").onclick = () => { state.mode = "daily"; newPuzzle(); };
 el("mode-free").onclick = () => { state.mode = "free"; newPuzzle(); };
-el("lang").onclick = () => { state.lang = state.lang === "tr" ? "en" : "tr"; render(); };
+el("lang").onclick = () => {
+  state.lang = state.lang === "tr" ? "en" : "tr";
+  try { localStorage.setItem("lang", state.lang); } catch {}
+  render();
+};
 
 graph = buildGraph(await (await fetch("data/game.json")).json());
 newPuzzle();
